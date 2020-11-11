@@ -9,7 +9,13 @@ class PageNavTable extends React.Component {
 		const { titles, height } = this.props;
 		if (!(titles instanceof Array) || !height) return null;
 		const headerJSX = titles.map((title, i) => {
-			return <Table.HeaderCell key={i}>{title}</Table.HeaderCell>;
+			if (!title) return <Table.HeaderCell key={i}></Table.HeaderCell>;
+			const { text, align } = title;
+			return (
+				<Table.HeaderCell key={i} textAlign={align ? align : "left"}>
+					{text}
+				</Table.HeaderCell>
+			);
 		});
 		return <Table.Row style={{ height: height * 0.1 }}>{headerJSX}</Table.Row>;
 	};
@@ -34,7 +40,8 @@ class PageNavTable extends React.Component {
 					opacity: this.state.opacity,
 				};
 				const cellJSX = Object.keys(element).map((key) => {
-					if (key === "button" && element[key].cb) {
+					if (element[key].type === "button" && element[key].cb) {
+						if (!element[key]) return <Table.Cell key={key}></Table.Cell>;
 						const {
 							style,
 							stopEventBubble,
@@ -45,9 +52,10 @@ class PageNavTable extends React.Component {
 							size,
 							color,
 							compact,
+							align,
 						} = element[key];
 						return (
-							<Table.Cell key={key}>
+							<Table.Cell key={key} textAlign={align ? align : "left"}>
 								<Button
 									key={key}
 									style={Object.assign({}, style)}
@@ -65,8 +73,12 @@ class PageNavTable extends React.Component {
 							</Table.Cell>
 						);
 					}
-					const { text } = element[key];
-					return <Table.Cell key={key}>{text}</Table.Cell>;
+					const { text, type, align } = element[key];
+					return type ? (
+						<Table.Cell key={key} textAlign={align ? align : "left"}>
+							{text}
+						</Table.Cell>
+					) : null;
 				});
 				return (
 					<Table.Row key={index} style={rowStyle}>
@@ -110,19 +122,24 @@ class PageNavTable extends React.Component {
 	totalPage = 1;
 
 	onPageBack = () => {
-		const { dataList, rowsPerPage } = this.props;
+		const { dataList, rowsPerPage, controlAttr } = this.props;
 		if (!(dataList instanceof Array)) return;
 		if (!dataList.length) return;
 		const rows = isNaN(+rowsPerPage) ? dataList.length : +rowsPerPage;
 
 		if (this.anchor >= rows) {
 			this.anchor = this.anchor - rows;
+			const p = this.anchor / rows + 1;
 			this.setState({
 				disableNext: false,
-				pageNumber: this.anchor / rows + 1,
+				pageNumber: p,
 				restEmptyList: [],
 			});
+			if (controlAttr && controlAttr.backCb instanceof Function) {
+				controlAttr.backCb.call(null, p);
+			}
 		}
+
 		if (this.anchor === 0) {
 			this.setState({ disableBack: true });
 		}
@@ -130,7 +147,7 @@ class PageNavTable extends React.Component {
 	};
 
 	onPageNext = () => {
-		const { dataList, rowsPerPage } = this.props;
+		const { dataList, rowsPerPage, controlAttr } = this.props;
 		if (!(dataList instanceof Array)) return;
 		if (!dataList.length) return;
 		const rows = isNaN(+rowsPerPage) ? dataList.length : +rowsPerPage;
@@ -153,9 +170,13 @@ class PageNavTable extends React.Component {
 					this.setState({ disableNext: false });
 				}
 			}
+			const p = this.anchor / rows + 1;
+			if (controlAttr && controlAttr.backCb instanceof Function) {
+				controlAttr.nextCb.call(null, p);
+			}
 			this.setState({
 				disableBack: false,
-				pageNumber: this.anchor / rows + 1,
+				pageNumber: p,
 			});
 			this.fadeInOut();
 		}
@@ -174,10 +195,10 @@ class PageNavTable extends React.Component {
 			const { dataList, rowsPerPage, controlAttr } = this.props;
 			if (!(dataList instanceof Array)) return;
 			const rows = isNaN(+rowsPerPage) ? dataList.length : +rowsPerPage;
-            const inputVal = parseInt(target.value);
-            if (controlAttr && controlAttr.inputCb instanceof Function) {
-                controlAttr.inputCb.call(null, inputVal);
-            }
+			const inputVal = parseInt(target.value);
+			if (controlAttr && controlAttr.inputCb instanceof Function) {
+				controlAttr.inputCb.call(null, inputVal);
+			}
 			if (inputVal === this.state.pageNumber) return;
 			if (inputVal <= this.totalPage + 1 && inputVal > 0 && !isNaN(inputVal)) {
 				const start = inputVal * rows - rows;
@@ -212,8 +233,7 @@ class PageNavTable extends React.Component {
 					this.fadeInOut();
 					start + rows >= dataList.length
 						? this.setState({ disableNext: true })
-                        : this.setState({ disableNext: false });
-                    
+						: this.setState({ disableNext: false });
 				}
 			}
 		}
