@@ -84,8 +84,8 @@ class Main extends React.Component {
 						nextCb: this.onNextPage, // 后退回调
 					}}
 					// 控制翻页组件属性
-					tableStyle={{ headerStyle: {}, bodyStyle: {}, opacity: 0.8 }} // 表格样式： headerStyle表头样式， bodyStyle表格body样式，剩余属性为自身css样式
-					tableColor={"blue"} // 表格固定颜色：red orange yellow olive green teal blue violet purple pink brown grey black
+					tableStyle={{ headerStyle: {}, bodyStyle: {}, opacity: 0.8, backgroundColor:"gray" }} // 表格样式： headerStyle表头样式， bodyStyle表格body样式，剩余属性为自身css样式
+					// tableColor={"blue"} // 表格固定颜色：red orange yellow olive green teal blue violet purple pink brown grey black
 					striped // 是否采用斑马型表格
 				/>
 			</div>

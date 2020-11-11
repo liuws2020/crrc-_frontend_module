@@ -5,14 +5,22 @@ import $ from "jquery";
 import "./animation.css";
 
 class PageNavTable extends React.Component {
-	renderTableHeaders = () => {
+	renderTableHeaders = (tableHeaderBC) => {
 		const { titles, height } = this.props;
 		if (!(titles instanceof Array) || !height) return null;
 		const headerJSX = titles.map((title, i) => {
-			if (!title) return <Table.HeaderCell key={i}></Table.HeaderCell>;
+			if (!title)
+				return (
+					<Table.HeaderCell
+						key={i}
+						style={{ backgroundColor: tableHeaderBC }}></Table.HeaderCell>
+				);
 			const { text, align } = title;
 			return (
-				<Table.HeaderCell key={i} textAlign={align ? align : "left"}>
+				<Table.HeaderCell
+					key={i}
+					textAlign={align ? align : "left"}
+					style={{ backgroundColor: tableHeaderBC }}>
 					{text}
 				</Table.HeaderCell>
 			);
@@ -272,6 +280,7 @@ class PageNavTable extends React.Component {
 						style={{
 							borderTopRightRadius: 0,
 							borderBottomRightRadius: 0,
+							cursor: "pointer",
 							height: "100%",
 							...Object.assign({}, styleBtn),
 						}}>
@@ -315,6 +324,7 @@ class PageNavTable extends React.Component {
 						style={{
 							borderTopLeftRadius: 0,
 							borderBottomLeftRadius: 0,
+							cursor: "pointer",
 							height: "100%",
 							...Object.assign({}, styleBtn),
 						}}>
@@ -334,6 +344,26 @@ class PageNavTable extends React.Component {
 		tableCss && delete tableCss.headerStyle;
 		tableCss && delete tableCss.bodyStyle;
 
+		const publicColor =
+			tableCss && tableCss.backgroundColor ? tableCss.backgroundColor : null;
+		const containerColor =
+			controlAttr &&
+			controlAttr.containerCss &&
+			controlAttr.containerCss.backgroundColor
+				? controlAttr.containerCss.backgroundColor
+				: null;
+
+		let containerBC = publicColor;
+		if (containerColor) {
+			containerBC = containerColor;
+		}
+		if (!containerBC) {
+			containerBC = "white";
+		}
+
+		const tableHeaderBC =
+			tableCss && tableCss.backgroundColor ? tableCss.backgroundColor : "white";
+
 		return (
 			<Grid>
 				<Grid.Column width={16} style={{ padding: 0 }}>
@@ -347,13 +377,9 @@ class PageNavTable extends React.Component {
 								paddingLeft: "0.5%",
 								boxShadow: "none",
 								border: "none",
-								backgroundColor:
-									tableCss && tableCss.backgroundColor
-										? tableCss.backgroundColor
-										: "white",
 							}}>
 							<Table
-								color={tableColor ? tableColor : "black"}
+								color={tableColor ? tableColor : null}
 								inverted={tableColor ? true : false}
 								selectable
 								striped={striped ? striped : false}
@@ -363,8 +389,11 @@ class PageNavTable extends React.Component {
 									borderBottomRightRadius: 0,
 									...Object.assign({}, tableCss),
 								}}>
-								<Table.Header style={Object.assign({}, headerStyle)}>
-									{this.renderTableHeaders()}
+								<Table.Header
+									style={{
+										...Object.assign({}, headerStyle),
+									}}>
+									{this.renderTableHeaders(tableHeaderBC)}
 								</Table.Header>
 								<Table.Body style={Object.assign({}, bodyStyle)}>
 									{this.renderBodyElements()}
@@ -380,10 +409,7 @@ class PageNavTable extends React.Component {
 								height: this.props.height * 0.15,
 								borderTopLeftRadius: 0,
 								borderTopRightRadius: 0,
-								backgroundColor:
-									tableStyle && tableStyle.backgroundColor
-										? tableStyle.backgroundColor
-										: "white",
+								backgroundColor: containerBC,
 								...Object.assign(
 									{},
 									controlAttr ? controlAttr.containerCss : {}
