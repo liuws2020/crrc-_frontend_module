@@ -167,7 +167,7 @@ class PageNavTable extends React.Component {
 	};
 
 	onFilterChange = (key, value) => {
-		const dataList = this.state.data;
+		const dataList = this.originList;
 		const filtered = _.filter(dataList, function (o) {
 			return `${o[key].text}`.includes(value);
 		});
