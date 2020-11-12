@@ -29,6 +29,17 @@ class PageNavTable extends React.Component {
 						}}></Table.HeaderCell>
 				);
 			const { text, align, key, type, controlBtnAttr } = title;
+			let sortText = "";
+			switch (this.state.sortControls[i].sortType) {
+				case this.sortTypes[0]:
+					sortText = "取消排序";
+					break;
+				case this.sortTypes[1]:
+					sortText = "升序排序";
+					break;
+				default:
+					sortText = "降序排序";
+			}
 			return (
 				<Table.HeaderCell
 					key={i}
@@ -42,32 +53,46 @@ class PageNavTable extends React.Component {
 								</Grid.Column>
 								<Grid.Column width={4} style={{ paddingTop: "2%" }}>
 									<Button.Group size='small' floated={"left"}>
-										<Button
-											onClick={() => this.onSortTypeChange(i, key)}
-											inverted={
-												controlBtnAttr && controlBtnAttr.inverted ? true : false
+										<Popup
+											content={sortText}
+											on={"hover"}
+											position={"bottom center"}
+											style={
+												this.props.popupStyle
+													? Object.assign({}, this.props.popupStyle.style)
+													: {}
 											}
-											style={Object.assign(
-												{},
-												controlBtnAttr && controlBtnAttr.style
-											)}
-											color={
-												controlBtnAttr && controlBtnAttr.color
-													? controlBtnAttr.color
-													: null
-											}
-											icon={
-												<Icon
-													name={this.state.sortControls[i].sortType}
+											trigger={
+												<Button
+													onClick={() => this.onSortTypeChange(i, key)}
 													inverted={
 														controlBtnAttr && controlBtnAttr.inverted
 															? true
 															: false
 													}
+													style={Object.assign(
+														{},
+														controlBtnAttr && controlBtnAttr.style
+													)}
 													color={
 														controlBtnAttr && controlBtnAttr.color
 															? controlBtnAttr.color
-															: "grey"
+															: null
+													}
+													icon={
+														<Icon
+															name={this.state.sortControls[i].sortType}
+															inverted={
+																controlBtnAttr && controlBtnAttr.inverted
+																	? true
+																	: false
+															}
+															color={
+																controlBtnAttr && controlBtnAttr.color
+																	? controlBtnAttr.color
+																	: "grey"
+															}
+														/>
 													}
 												/>
 											}
