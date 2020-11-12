@@ -1,7 +1,16 @@
 import React from "react";
-import { Segment, Grid, Table, Input, Button, Icon } from "semantic-ui-react";
+import {
+	Segment,
+	Grid,
+	Table,
+	Input,
+	Button,
+	Icon,
+	Ref,
+} from "semantic-ui-react";
 import "semantic-ui-css/semantic.min.css";
 import $ from "jquery";
+import _ from "lodash";
 import "./animation.css";
 
 class PageNavTable extends React.Component {
@@ -13,25 +22,139 @@ class PageNavTable extends React.Component {
 				return (
 					<Table.HeaderCell
 						key={i}
-						style={{ backgroundColor: tableHeaderBC }}></Table.HeaderCell>
+						style={{
+							backgroundColor: tableHeaderBC ? tableHeaderBC : null,
+						}}></Table.HeaderCell>
 				);
-			const { text, align } = title;
+			const { text, align, key, type, controlBtnAttr } = title;
 			return (
 				<Table.HeaderCell
 					key={i}
 					textAlign={align ? align : "left"}
-					style={{ backgroundColor: tableHeaderBC }}>
-					{text}
+					style={{ backgroundColor: tableHeaderBC ? tableHeaderBC : null }}>
+					{type === "text" ? (
+						<Grid>
+							<Grid.Row columns={2}>
+								<Grid.Column width={8} style={{ paddingTop: "2%" }}>
+									{text}
+								</Grid.Column>
+								<Grid.Column width={4} style={{ paddingTop: "2%" }}>
+									<Button.Group size='small' floated={"left"}>
+										<Button
+											onClick={() => this.onSortTypeChange(i, key)}
+											inverted={
+												controlBtnAttr && controlBtnAttr.inverted ? true : false
+											}
+											style={Object.assign(
+												{},
+												controlBtnAttr && controlBtnAttr.style
+											)}
+											color={
+												controlBtnAttr && controlBtnAttr.color
+													? controlBtnAttr.color
+													: null
+											}
+											icon={
+												<Icon
+													name={this.state.sortControls[i].sortType}
+													inverted={
+														controlBtnAttr && controlBtnAttr.inverted
+															? true
+															: false
+													}
+													color={
+														controlBtnAttr && controlBtnAttr.color
+															? controlBtnAttr.color
+															: "grey"
+													}
+												/>
+											}
+										/>
+										<Button
+											inverted={
+												controlBtnAttr && controlBtnAttr.inverted ? true : false
+											}
+											style={Object.assign(
+												{},
+												controlBtnAttr && controlBtnAttr.style
+											)}
+											color={
+												controlBtnAttr && controlBtnAttr.color
+													? controlBtnAttr.color
+													: null
+											}
+											icon={
+												<Icon
+													name={"filter"}
+													inverted={
+														controlBtnAttr && controlBtnAttr.inverted
+															? true
+															: false
+													}
+													color={
+														controlBtnAttr && controlBtnAttr.color
+															? controlBtnAttr.color
+															: "grey"
+													}
+												/>
+											}
+										/>
+									</Button.Group>
+								</Grid.Column>
+							</Grid.Row>
+						</Grid>
+					) : (
+						text
+					)}
 				</Table.HeaderCell>
 			);
 		});
 		return <Table.Row style={{ height: height * 0.1 }}>{headerJSX}</Table.Row>;
 	};
 
-	renderBodyElements = () => {
-		const { dataList, height, animationDuration, rowsPerPage } = this.props;
+	sortTypes = ["sort", "caret up", "caret down"];
+	originList = [];
 
+	onSortTypeChange = (i, key) => {
+		let typeIndex;
+		this.setState(({ sortControls }) => {
+			const control = sortControls[i];
+			typeIndex = this.sortTypes.indexOf(control.sortType);
+			let sorted = [];
+			switch (this.sortTypes[typeIndex]) {
+				case "caret down":
+					sorted = _.orderBy(this.state.data, [`orderBy_${key}`], ["desc"]);
+					break;
+				case "caret up":
+					sorted = _.orderBy(this.state.data, [`orderBy_${key}`], ["asc"]);
+					break;
+				default:
+					sorted = [...this.originList];
+			}
+			if (typeIndex < this.sortTypes.length - 1) {
+				sortControls[i].sortType = this.sortTypes[typeIndex + 1];
+				for (let j = 0, len = sortControls.length; j < len; j++) {
+					if (j === i) continue;
+					sortControls[j].sortType = this.sortTypes[2];
+				}
+				return { sortControls: [...sortControls], data: [...sorted] };
+			}
+			sortControls[i].sortType = this.sortTypes[0];
+			for (let j = 0, len = sortControls.length; j < len; j++) {
+				if (j === i) continue;
+				sortControls[j].sortType = this.sortTypes[2];
+			}
+			return { sortControls: [...sortControls], data: [...sorted] };
+		});
+	};
+
+	renderBodyElements = () => {
+		const { height, animationDuration, rowClickCb } = this.props;
+		const rowsPerPage = this.state.pages;
+		const dataList = this.deleteOrderKeys(this.state.data);
 		if (!(dataList instanceof Array) || !height) return null;
+		if (!dataList.length) return null;
+
 		return [...dataList, ...this.state.restEmptyList]
 			.slice(
 				this.anchor,
@@ -89,11 +212,22 @@ class PageNavTable extends React.Component {
 					) : null;
 				});
 				return (
-					<Table.Row key={index} style={rowStyle}>
+					<Table.Row
+						key={index}
+						style={rowStyle}
+						onClick={() => {
+							this.onRowClick(element, rowClickCb);
+						}}>
 						{cellJSX}
 					</Table.Row>
 				);
 			});
+	};
+
+	onRowClick = (element, cb) => {
+		if (cb instanceof Function) {
+			cb.call(null, element);
+		}
 	};
 
 	state = {
@@ -102,7 +236,15 @@ class PageNavTable extends React.Component {
 		pageNumber: 1,
 		opacity: 1,
 		restEmptyList: [],
+		data: [],
+		sortControls: this.props.titles.map((title) => {
+			return { ...title, sortType: this.sortTypes[2] };
+		}),
+		oversize: false,
+		pages: this.props.rowsPerPage,
 	};
+
+	pages = 0;
 
 	componentDidMount() {
 		const { dataList, rowsPerPage } = this.props;
@@ -111,26 +253,74 @@ class PageNavTable extends React.Component {
 				this.setState({ disableNext: false });
 				this.totalPage = Math.floor(dataList.length / rowsPerPage);
 			}
+			this.addOrderKeys(dataList);
+			this.setState({ data: dataList });
+			this.originList = dataList;
 		}
 	}
 
 	componentDidUpdate(preProps, preState) {
-		const { dataList, rowsPerPage } = this.props;
+		const { dataList } = this.props;
+		const rowsPerPage = this.state.pages;
 		if (preProps.dataList !== dataList) {
 			if (dataList instanceof Array) {
 				if (dataList.length > rowsPerPage) {
 					this.setState({ disableNext: false });
 					this.totalPage = Math.floor(dataList.length / rowsPerPage);
 				}
+				this.addOrderKeys(dataList);
+				this.setState({ data: dataList });
+				this.originList = dataList;
 			}
 		}
+
+		if (
+			this.tableRef.current.offsetHeight > this.props.height * 0.85 &&
+			!this.state.oversize
+		) {
+			this.setState({ oversize: true });
+		}
+
+		if (this.state.oversize !== preState.oversize && this.state.oversize) {
+			const unitHeight =
+				this.tableRef.current.offsetHeight / (this.props.rowsPerPage + 1);
+			this.setState({
+				pages: Math.floor((this.props.height * 0.85) / unitHeight) - 1,
+			});
+		}
 	}
+
+	addOrderKeys = (dataList) => {
+		for (let d of dataList) {
+			const keys = Object.keys(d);
+			for (let key of keys) {
+				if (d[key].type === "text" && !d[`orderBy_${key}`]) {
+					d[`orderBy_${key}`] = d[key].text;
+				}
+			}
+		}
+	};
+
+	deleteOrderKeys = (dataList) => {
+		return dataList.map((d) => {
+			const keys = Object.keys(d);
+			const element = Object.assign({}, d);
+			for (let key of keys) {
+				if (key.split("_")[0] === "orderBy") {
+					delete element[key];
+				}
+			}
+			return element;
+		});
+	};
 
 	anchor = 0;
 	totalPage = 1;
 
 	onPageBack = () => {
-		const { dataList, rowsPerPage, controlAttr } = this.props;
+		const { controlAttr } = this.props;
+		const rowsPerPage = this.state.pages;
+		const dataList = this.state.data;
 		if (!(dataList instanceof Array)) return;
 		if (!dataList.length) return;
 		const rows = isNaN(+rowsPerPage) ? dataList.length : +rowsPerPage;
@@ -155,7 +345,9 @@ class PageNavTable extends React.Component {
 	};
 
 	onPageNext = () => {
-		const { dataList, rowsPerPage, controlAttr } = this.props;
+		const { controlAttr } = this.props;
+		const dataList = this.state.data;
+		const rowsPerPage = this.state.pages;
 		if (!(dataList instanceof Array)) return;
 		if (!dataList.length) return;
 		const rows = isNaN(+rowsPerPage) ? dataList.length : +rowsPerPage;
@@ -200,7 +392,9 @@ class PageNavTable extends React.Component {
 
 	onPageNumberChange = ({ target }) => {
 		if (target) {
-			const { dataList, rowsPerPage, controlAttr } = this.props;
+			const { controlAttr } = this.props;
+			const dataList = this.state.data;
+			const rowsPerPage = this.state.pages;
 			if (!(dataList instanceof Array)) return;
 			const rows = isNaN(+rowsPerPage) ? dataList.length : +rowsPerPage;
 			const inputVal = parseInt(target.value);
@@ -335,6 +529,8 @@ class PageNavTable extends React.Component {
 		);
 	};
 
+	tableRef = React.createRef();
+
 	render() {
 		const { tableStyle, tableColor, striped, controlAttr } = this.props;
 		const headerStyle = tableStyle ? tableStyle.headerStyle : null;
@@ -378,27 +574,33 @@ class PageNavTable extends React.Component {
 								boxShadow: "none",
 								border: "none",
 							}}>
-							<Table
-								color={tableColor ? tableColor : null}
-								inverted={tableColor ? true : false}
-								selectable
-								striped={striped ? striped : false}
-								style={{
-									height: "inherit",
-									borderBottomLeftRadius: 0,
-									borderBottomRightRadius: 0,
-									...Object.assign({}, tableCss),
-								}}>
-								<Table.Header
+							<Ref innerRef={this.tableRef}>
+								<Table
+									color={tableColor ? tableColor : null}
+									inverted={tableColor ? true : false}
+									selectable
+									striped={striped ? striped : false}
 									style={{
-										...Object.assign({}, headerStyle),
+										height: "inherit",
+										borderBottomLeftRadius: 0,
+										borderBottomRightRadius: 0,
+										...Object.assign({}, tableCss),
 									}}>
-									{this.renderTableHeaders(tableHeaderBC)}
-								</Table.Header>
-								<Table.Body style={Object.assign({}, bodyStyle)}>
-									{this.renderBodyElements()}
-								</Table.Body>
-							</Table>
+									<Table.Header
+										style={{
+											...Object.assign({}, headerStyle),
+										}}>
+										{this.renderTableHeaders(tableColor ? null : tableHeaderBC)}
+									</Table.Header>
+
+									<Table.Body
+										style={{
+											...Object.assign({}, bodyStyle),
+										}}>
+										{this.renderBodyElements()}
+									</Table.Body>
+								</Table>
+							</Ref>
 						</Segment>
 					</Grid.Row>
 					<Grid.Row style={{ paddingRight: "0.5%", paddingLeft: "0.5%" }}>

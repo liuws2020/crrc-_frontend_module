@@ -52,19 +52,39 @@ class Main extends React.Component {
 		console.log(pageNo);
 	};
 
+	rowClickCallback = (element) => {
+		// 点击后，会返回当前行所有数据
+		console.log(element);
+	};
+
 	render() {
 		return (
 			<div>
 				<TablePageNav
 					dataList={this.processData()} // 数据：[{},{},{}...]
-					rowsPerPage={6} // 每页的行数
+					rowsPerPage={10} // 每页的行数(会根据高度自动调整)
 					height={window.innerHeight} // 组件高度
 					titles={[
-						{ text: "故障代码", align: "center" },
-						{ text: "时间", align: "center" },
-						{ text: "等级", align: "center" },
-						{ text: "故障名称", align: "center" },
-						{ text: "故障详情", align: "center" },
+						{
+							text: "故障代码",
+							align: "center",
+							key: "mfCode",
+							type: "text",
+							controlBtnAttr: {
+								color: "teal",
+								inverted: true,
+								style: {},
+							},
+						},
+						{ text: "时间", align: "center", key: "dateTime", type: "text" },
+						{ text: "等级", align: "center", key: "level", type: "text" },
+						{ text: "故障名称", align: "center", key: "mfName", type: "text" },
+						{
+							text: "故障详情",
+							align: "center",
+							key: "moreInfo",
+							type: "button",
+						},
 					]}
 					animationDuration={0.5} // 过渡动画持续时间
 					controlAttr={{
@@ -84,8 +104,13 @@ class Main extends React.Component {
 						nextCb: this.onNextPage, // 后退回调
 					}}
 					// 控制翻页组件属性
-					tableStyle={{ headerStyle: {}, bodyStyle: {}, opacity: 0.8, backgroundColor:"gray" }} // 表格样式： headerStyle表头样式， bodyStyle表格body样式，剩余属性为自身css样式
-					// tableColor={"blue"} // 表格固定颜色：red orange yellow olive green teal blue violet purple pink brown grey black
+					rowClickCb={this.rowClickCallback}
+					tableStyle={{
+						headerStyle: {},
+						bodyStyle: {},
+						opacity: 0.8 /*  backgroundColor:"gray" */,
+					}} // 表格样式： headerStyle表头样式， bodyStyle表格body样式，剩余属性为自身css样式
+					tableColor={"blue"} // 表格固定颜色：red orange yellow olive green teal blue violet purple pink brown grey black
 					striped // 是否采用斑马型表格
 				/>
 			</div>
