@@ -7,6 +7,8 @@ import {
 	Button,
 	Icon,
 	Ref,
+	Popup,
+	Header,
 } from "semantic-ui-react";
 import "semantic-ui-css/semantic.min.css";
 import $ from "jquery";
@@ -70,31 +72,83 @@ class PageNavTable extends React.Component {
 												/>
 											}
 										/>
-										<Button
+										<Popup
+											content={
+												<React.Fragment>
+													<Header
+														icon
+														style={
+															this.props.popupStyle &&
+															this.props.popupStyle.headerStyle
+																? Object.assign(
+																		{},
+																		this.props.popupStyle.headerStyle
+																  )
+																: {}
+														}>
+														关键字过滤
+													</Header>
+													<Input
+														placeholder='输入关键字'
+														value={this.state.filterText}
+														style={
+															this.props.popupStyle &&
+															this.props.popupStyle.inputStyle
+																? Object.assign(
+																		{},
+																		this.props.popupStyle.inputStyle
+																  )
+																: {}
+														}
+														onChange={(e) =>
+															this.onFilterChange(key, e.target.value)
+														}
+													/>
+												</React.Fragment>
+											}
+											style={
+												this.props.popupStyle
+													? Object.assign({}, this.props.popupStyle.style)
+													: {}
+											}
 											inverted={
-												controlBtnAttr && controlBtnAttr.inverted ? true : false
+												this.props.popupStyle && this.props.popupStyle.inverted
+													? this.props.popupStyle.inverted
+													: true
 											}
-											style={Object.assign(
-												{},
-												controlBtnAttr && controlBtnAttr.style
-											)}
-											color={
-												controlBtnAttr && controlBtnAttr.color
-													? controlBtnAttr.color
-													: null
-											}
-											icon={
-												<Icon
-													name={"filter"}
+											on={"click"}
+											position={"bottom center"}
+											onUnmount={this.restoreData}
+											trigger={
+												<Button
 													inverted={
 														controlBtnAttr && controlBtnAttr.inverted
 															? true
 															: false
 													}
+													style={Object.assign(
+														{},
+														controlBtnAttr && controlBtnAttr.style
+													)}
 													color={
 														controlBtnAttr && controlBtnAttr.color
 															? controlBtnAttr.color
-															: "grey"
+															: null
+													}
+													icon={
+														<Icon
+															name={"filter"}
+															inverted={
+																controlBtnAttr && controlBtnAttr.inverted
+																	? true
+																	: false
+															}
+															color={
+																controlBtnAttr && controlBtnAttr.color
+																	? controlBtnAttr.color
+																	: "grey"
+															}
+														/>
 													}
 												/>
 											}
@@ -110,6 +164,18 @@ class PageNavTable extends React.Component {
 			);
 		});
 		return <Table.Row style={{ height: height * 0.1 }}>{headerJSX}</Table.Row>;
+	};
+
+	onFilterChange = (key, value) => {
+		const dataList = this.state.data;
+		const filtered = _.filter(dataList, function (o) {
+			return `${o[key].text}`.includes(value);
+		});
+		this.setState({ filterText: value, data: filtered });
+	};
+
+	restoreData = () => {
+		this.setState({ filterText: "", data: this.originList });
 	};
 
 	sortTypes = ["sort", "caret up", "caret down"];
@@ -242,6 +308,7 @@ class PageNavTable extends React.Component {
 		}),
 		oversize: false,
 		pages: this.props.rowsPerPage,
+		filterText: "",
 	};
 
 	pages = 0;

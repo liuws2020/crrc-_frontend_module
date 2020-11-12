@@ -62,7 +62,7 @@ class Main extends React.Component {
 			<div>
 				<TablePageNav
 					dataList={this.processData()} // 数据：[{},{},{}...]
-					rowsPerPage={10} // 每页的行数(会根据高度自动调整)
+					rowsPerPage={9} // 每页的行数(会根据高度自动调整)
 					height={window.innerHeight} // 组件高度
 					titles={[
 						{
@@ -86,6 +86,12 @@ class Main extends React.Component {
 							type: "button",
 						},
 					]}
+					popupStyle={{
+						style: { borderRadius: 0, opacity: 0.7, padding: "2em" }, // 气泡整体css
+						headerStyle: {}, // 标题css
+						inputStyle: {}, // 输入框css
+						inverted: true,
+					}}
 					animationDuration={0.5} // 过渡动画持续时间
 					controlAttr={{
 						containerCss: { opacity: 0.8 }, // 控制组件容器css
