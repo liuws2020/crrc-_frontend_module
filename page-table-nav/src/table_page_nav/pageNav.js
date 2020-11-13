@@ -28,7 +28,15 @@ class PageNavTable extends React.Component {
 							backgroundColor: tableHeaderBC ? tableHeaderBC : null,
 						}}></Table.HeaderCell>
 				);
-			const { text, align, key, type, controlBtnAttr } = title;
+			const {
+				text,
+				align,
+				key,
+				type,
+				controlBtnAttr,
+				sortCb,
+				filterCb,
+			} = title;
 			let sortText = "";
 			switch (this.state.sortControls[i].sortType) {
 				case this.sortTypes[0]:
@@ -40,150 +48,153 @@ class PageNavTable extends React.Component {
 				default:
 					sortText = "降序排序";
 			}
+
+			const popupCSS = this.props.popupStyle;
+
+			const popupStyle = popupCSS ? popupCSS.style : {};
+
+			const headerStyle =
+				popupCSS && popupCSS.headerStyle
+					? Object.assign({}, popupCSS.headerStyle)
+					: {};
+
+			const headerSize =
+				popupCSS && popupCSS.headerSize ? popupCSS.headerSize : "medium";
+
+			const inputStyle =
+				popupCSS && popupCSS.inputStyle
+					? Object.assign({}, popupCSS.inputStyle)
+					: {};
+
+			const popupInverted =
+				popupCSS && popupCSS.inverted ? popupCSS.inverted : true;
+
+			const buttonInverted =
+				controlBtnAttr && controlBtnAttr.inverted ? true : false;
+
+			const buttonStyle = Object.assign(
+				{},
+				controlBtnAttr && controlBtnAttr.style
+			);
+
+			const buttonColor =
+				controlBtnAttr && controlBtnAttr.color ? controlBtnAttr.color : null;
+
+			const titleStyle = this.props.titleStyle;
+			const titleSize =
+				titleStyle && titleStyle.headerSize ? titleStyle.headerSize : "medium";
+			const titleCSS = titleStyle
+				? Object.assign({}, titleStyle.headerStyle)
+				: {};
+
+			const sortable = title && title.sort ? true : false;
+			const filterable = title && title.filter ? true : false;
+
 			return (
 				<Table.HeaderCell
 					key={i}
 					textAlign={align ? align : "left"}
 					style={{ backgroundColor: tableHeaderBC ? tableHeaderBC : null }}>
-					{type === "text" ? (
+					{type === "text" && (sortable || filterable) ? (
 						<Grid>
 							<Grid.Row columns={2}>
 								<Grid.Column width={8} style={{ paddingTop: "2%" }}>
-									{text}
+									<Header
+										size={titleSize}
+										style={titleCSS}
+										inverted={tableHeaderBC ? false : true}>
+										{text}
+									</Header>
 								</Grid.Column>
 								<Grid.Column width={4} style={{ paddingTop: "2%" }}>
 									<Button.Group size='small' floated={"left"}>
-										<Popup
-											content={sortText}
-											on={"hover"}
-											position={"bottom center"}
-											style={
-												this.props.popupStyle
-													? Object.assign({}, this.props.popupStyle.style)
-													: {}
-											}
-											trigger={
-												<Button
-													onClick={() => this.onSortTypeChange(i, key)}
-													inverted={
-														controlBtnAttr && controlBtnAttr.inverted
-															? true
-															: false
-													}
-													style={Object.assign(
-														{},
-														controlBtnAttr && controlBtnAttr.style
-													)}
-													color={
-														controlBtnAttr && controlBtnAttr.color
-															? controlBtnAttr.color
-															: null
-													}
-													icon={
-														<Icon
-															name={this.state.sortControls[i].sortType}
-															inverted={
-																controlBtnAttr && controlBtnAttr.inverted
-																	? true
-																	: false
-															}
-															color={
-																controlBtnAttr && controlBtnAttr.color
-																	? controlBtnAttr.color
-																	: "grey"
-															}
-														/>
-													}
-												/>
-											}
-										/>
-										<Popup
-											content={
-												<React.Fragment>
-													<Header
-														icon
-														style={
-															this.props.popupStyle &&
-															this.props.popupStyle.headerStyle
-																? Object.assign(
-																		{},
-																		this.props.popupStyle.headerStyle
-																  )
-																: {}
-														}>
-														关键字过滤
+										{sortable ? (
+											<Popup
+												content={
+													<Header icon style={headerStyle} size={headerSize}>
+														{sortText}
 													</Header>
-													<Input
-														placeholder='输入关键字'
-														value={this.state.filterText}
-														style={
-															this.props.popupStyle &&
-															this.props.popupStyle.inputStyle
-																? Object.assign(
-																		{},
-																		this.props.popupStyle.inputStyle
-																  )
-																: {}
+												}
+												inverted={popupInverted}
+												on={"hover"}
+												position={"bottom center"}
+												style={popupStyle}
+												trigger={
+													<Button
+														onClick={() =>
+															this.onSortTypeChange(i, key, sortCb)
 														}
-														onChange={(e) =>
-															this.onFilterChange(key, e.target.value)
+														inverted={buttonInverted}
+														style={buttonStyle}
+														color={buttonColor}
+														icon={
+															<Icon
+																name={this.state.sortControls[i].sortType}
+																inverted={buttonInverted}
+																color={
+																	controlBtnAttr && controlBtnAttr.color
+																		? controlBtnAttr.color
+																		: "grey"
+																}
+															/>
 														}
 													/>
-												</React.Fragment>
-											}
-											style={
-												this.props.popupStyle
-													? Object.assign({}, this.props.popupStyle.style)
-													: {}
-											}
-											inverted={
-												this.props.popupStyle && this.props.popupStyle.inverted
-													? this.props.popupStyle.inverted
-													: true
-											}
-											on={"click"}
-											position={"bottom center"}
-											onUnmount={this.restoreData}
-											trigger={
-												<Button
-													inverted={
-														controlBtnAttr && controlBtnAttr.inverted
-															? true
-															: false
-													}
-													style={Object.assign(
-														{},
-														controlBtnAttr && controlBtnAttr.style
-													)}
-													color={
-														controlBtnAttr && controlBtnAttr.color
-															? controlBtnAttr.color
-															: null
-													}
-													icon={
-														<Icon
-															name={"filter"}
-															inverted={
-																controlBtnAttr && controlBtnAttr.inverted
-																	? true
-																	: false
-															}
-															color={
-																controlBtnAttr && controlBtnAttr.color
-																	? controlBtnAttr.color
-																	: "grey"
+												}
+											/>
+										) : null}
+										{filterable ? (
+											<Popup
+												content={
+													<React.Fragment>
+														<Header icon style={headerStyle} size={headerSize}>
+															关键字过滤
+														</Header>
+														<Input
+															placeholder='输入关键字'
+															value={this.state.filterText}
+															style={inputStyle}
+															onChange={({ target }) =>
+																this.onFilterChange(key, target.value, filterCb)
 															}
 														/>
-													}
-												/>
-											}
-										/>
+													</React.Fragment>
+												}
+												style={popupStyle}
+												inverted={popupInverted}
+												on={"click"}
+												position={"bottom center"}
+												onUnmount={this.restoreData}
+												trigger={
+													<Button
+														inverted={buttonInverted}
+														style={buttonStyle}
+														color={buttonColor}
+														icon={
+															<Icon
+																name={"filter"}
+																inverted={buttonInverted}
+																color={
+																	controlBtnAttr && controlBtnAttr.color
+																		? controlBtnAttr.color
+																		: "grey"
+																}
+															/>
+														}
+													/>
+												}
+											/>
+										) : null}
 									</Button.Group>
 								</Grid.Column>
 							</Grid.Row>
 						</Grid>
 					) : (
-						text
+						<Header
+							size={titleSize}
+							style={titleCSS}
+							inverted={tableHeaderBC ? false : true}>
+							{text}
+						</Header>
 					)}
 				</Table.HeaderCell>
 			);
@@ -191,12 +202,15 @@ class PageNavTable extends React.Component {
 		return <Table.Row style={{ height: height * 0.1 }}>{headerJSX}</Table.Row>;
 	};
 
-	onFilterChange = (key, value) => {
+	onFilterChange = (key, value, filterCb) => {
 		const dataList = this.originList;
-		const filtered = _.filter(dataList, function (o) {
-			return `${o[key].text}`.includes(value);
-		});
-		this.setState({ filterText: value, data: filtered });
+		filterCb instanceof Function && filterCb.call(null, key);
+		if (dataList instanceof Array && dataList.length) {
+			const filtered = _.filter(dataList, function (o) {
+				return `${o[key].text}`.includes(value);
+			});
+			this.setState({ filterText: value, data: filtered });
+		}
 	};
 
 	restoreData = () => {
@@ -206,11 +220,13 @@ class PageNavTable extends React.Component {
 	sortTypes = ["sort", "caret up", "caret down"];
 	originList = [];
 
-	onSortTypeChange = (i, key) => {
+	onSortTypeChange = (i, key, sortCb) => {
 		let typeIndex;
 		this.setState(({ sortControls }) => {
 			const control = sortControls[i];
 			typeIndex = this.sortTypes.indexOf(control.sortType);
+			sortCb instanceof Function &&
+				sortCb.call(null, [this.sortTypes[typeIndex], key]);
 			let sorted = [];
 			switch (this.sortTypes[typeIndex]) {
 				case "caret down":
@@ -582,8 +598,7 @@ class PageNavTable extends React.Component {
 						onClick={this.onPageNumClick}
 						ref={(node) => {
 							if (node && node.inputRef && node.inputRef.current) {
-								const inputDOM = node.inputRef.current;
-								$(inputDOM).css({
+								this.applyDOMcss(node.inputRef.current, {
 									"border-radius": 0,
 									"text-align": "center",
 									...Object.assign({}, styleInput),
@@ -619,6 +634,20 @@ class PageNavTable extends React.Component {
 				</Grid.Column>
 			</React.Fragment>
 		);
+	};
+
+	applyDOMcss = (DOM, css) => {
+		const polyfill = function (node, cssAttrs) {
+			const style = Object.assign({}, cssAttrs);
+			for (let attr in style) {
+				node.style[attr] = style[attr];
+			}
+		};
+		try {
+			$ instanceof Function ? $(DOM).css(css) : polyfill(DOM, css);
+		} catch (error) {
+			polyfill(DOM, css);
+		}
 	};
 
 	tableRef = React.createRef();

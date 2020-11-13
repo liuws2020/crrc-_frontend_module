@@ -57,6 +57,14 @@ class Main extends React.Component {
 		console.log(element);
 	};
 
+	onDataSortCallback = (args) => {
+		console.log("sorted", args[0], args[1]); // 排序方式，当前排序数据键值
+	};
+
+	onFliterInvokeCallback = (key) => {
+		console.log("filted", key); // 当前排序数据键值
+	};
+
 	render() {
 		return (
 			<div>
@@ -64,6 +72,7 @@ class Main extends React.Component {
 					dataList={this.processData()} // 数据：[{},{},{}...]
 					rowsPerPage={9} // 每页的行数(会根据高度自动调整)
 					height={window.innerHeight} // 组件高度
+					titleStyle={{ headerSize: "large", headerStyle: {} }}
 					titles={[
 						{
 							text: "故障代码",
@@ -75,9 +84,27 @@ class Main extends React.Component {
 								inverted: true,
 								style: {},
 							},
+							sort: true,
+							filter: true,
+							sortCb: this.onDataSortCallback,
+							filterCb: this.onFliterInvokeCallback,
 						},
-						{ text: "时间", align: "center", key: "dateTime", type: "text" },
-						{ text: "等级", align: "center", key: "level", type: "text" },
+						{
+							text: "时间",
+							align: "center",
+							key: "dateTime",
+							type: "text",
+							sort: false,
+							filter: true,
+						},
+						{
+							text: "等级",
+							align: "center",
+							key: "level",
+							type: "text",
+							filter: false,
+							sort: true,
+						},
 						{ text: "故障名称", align: "center", key: "mfName", type: "text" },
 						{
 							text: "故障详情",
@@ -87,10 +114,11 @@ class Main extends React.Component {
 						},
 					]}
 					popupStyle={{
-						style: { borderRadius: 0, opacity: 0.7, padding: "2em" }, // 气泡整体css
+						style: { borderRadius: "0.2em", opacity: 0.9, padding: "0.5em" }, // 气泡整体css
 						headerStyle: {}, // 标题css
 						inputStyle: {}, // 输入框css
 						inverted: true,
+						headerSize: "large", // tiny small medium large huge
 					}}
 					animationDuration={0.5} // 过渡动画持续时间
 					controlAttr={{
@@ -110,7 +138,7 @@ class Main extends React.Component {
 						nextCb: this.onNextPage, // 后退回调
 					}}
 					// 控制翻页组件属性
-					rowClickCb={this.rowClickCallback}
+					rowClickCb={this.rowClickCallback} // 点击行回调
 					tableStyle={{
 						headerStyle: {},
 						bodyStyle: {},
