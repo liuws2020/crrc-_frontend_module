@@ -6,7 +6,7 @@ class sequenceLine extends React.Component {
 	svg = null;
 	crosshairFocus = null;
 	componentDidMount() {
-		this.svg = D3.select(`#${this.props.chartID}`);
+		this.svg = D3.select(this.svgContextRef.current);
 		const { width, height, title, toolTips } = this.props;
 		if (width && height) {
 			const legendTitle = this.svg
@@ -241,7 +241,6 @@ class sequenceLine extends React.Component {
 
 	xAxis = (x_scale) => {
 		const {
-			chartID,
 			width,
 			height,
 			duration,
@@ -250,7 +249,7 @@ class sequenceLine extends React.Component {
 			dateStrFormatter,
 			rotateX,
 		} = this.props;
-		if (!chartID || !width || !height) return;
+		if (!width || !height) return;
 		const x_axis = D3.axisBottom().scale(x_scale);
 
 		if (xTicks && !isNaN(xTicks)) x_axis.ticks(xTicks);
@@ -373,16 +372,8 @@ class sequenceLine extends React.Component {
 	};
 
 	yAxis = (y_scale) => {
-		const {
-			chartID,
-			width,
-			height,
-			duration,
-			axisColor,
-			yTicks,
-			rotateY,
-		} = this.props;
-		if (!chartID || !width || !height) return;
+		const { width, height, duration, axisColor, yTicks, rotateY } = this.props;
+		if (!width || !height) return;
 
 		const y_axis = D3.axisLeft().scale(y_scale);
 
@@ -429,22 +420,8 @@ class sequenceLine extends React.Component {
 	};
 
 	shaps = (data, xScale, yScale, keys) => {
-		const {
-			chartID,
-			width,
-			height,
-			duration,
-			configPairs,
-			displayOption,
-		} = this.props;
-		if (
-			!chartID ||
-			!width ||
-			!height ||
-			!keys ||
-			!displayOption ||
-			(keys && !keys.length)
-		)
+		const { width, height, duration, configPairs, displayOption } = this.props;
+		if (!width || !height || !keys || !displayOption || (keys && !keys.length))
 			return;
 
 		for (let key of keys) {
@@ -672,16 +649,19 @@ class sequenceLine extends React.Component {
 		}, 500);
 	};
 
+	svgContextRef = React.createRef();
+
 	render() {
 		const { style, chartID, width, height, backgroundColor } = this.props;
-		if (!chartID || !width || !height) {
+		if (!width || !height) {
 			return null;
 		}
 		return (
 			<svg
-				id={chartID}
+				id={chartID ? chartID : "default_svg_id"}
 				width={width}
 				height={height}
+				ref={this.svgContextRef}
 				style={style ? { ...style, backgroundColor } : { backgroundColor }}
 			/>
 		);
