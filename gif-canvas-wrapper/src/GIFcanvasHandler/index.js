@@ -98,10 +98,12 @@ class CanvasGifWrapper extends React.Component {
 		let offsetX = 0;
 		let offsetY = 0;
 
+		const { gifAlign } = this.props;
+
 		if (imgWidth > gifWidth && imgHeight > gifHeight) {
 			const whr = gifWidth / gifHeight;
 
-			if (this.props.gifAlign === "center") {
+			if (gifAlign === "center") {
 				if (imgWidth > imgHeight) {
 					const emplifiedWidth = imgHeight * whr;
 					scale = emplifiedWidth / gifWidth;
@@ -111,20 +113,20 @@ class CanvasGifWrapper extends React.Component {
 					scale = emplifiedHeight / gifHeight;
 					offsetY = (-1 * (imgHeight - emplifiedHeight)) / (2 * scale);
 				}
-			} else if (this.props.gifAlign === "top") {
+			} else if (gifAlign === "top") {
 				if (imgWidth < imgHeight) {
 					offsetX = 0;
 					offsetY = 0;
 					const emplifiedHeight = imgWidth / whr;
 					scale = emplifiedHeight / gifHeight;
 				}
-			} else if (this.props.gifAlign === "bottom") {
+			} else if (gifAlign === "bottom") {
 				if (imgWidth < imgHeight) {
 					const emplifiedHeight = imgWidth / whr;
 					scale = emplifiedHeight / gifHeight;
 					offsetY = (-1 * (imgHeight - emplifiedHeight)) / scale;
 				}
-			} else if (this.props.gifAlign === "right") {
+			} else if (gifAlign === "right") {
 				if (imgWidth >= imgHeight) {
 					const emplifiedWidth = imgHeight * whr;
 					scale = emplifiedWidth / gifWidth;
@@ -140,18 +142,18 @@ class CanvasGifWrapper extends React.Component {
 		}
 
 		if (imgWidth <= gifWidth || imgHeight <= gifHeight) {
-			if (this.props.gifAlign === "center") {
+			if (gifAlign === "center") {
 				if (imgWidth > imgHeight) {
 					offsetX = (-1 * (imgWidth - resizedWidth)) / 2;
 				} else {
 					offsetY = (-1 * (imgHeight - resizedHeight)) / 2;
 				}
-			} else if (this.props.gifAlign === "top") {
-			} else if (this.props.gifAlign === "bottom") {
+			} else if (gifAlign === "top") {
+			} else if (gifAlign === "bottom") {
 				if (imgWidth <= imgHeight) {
 					offsetY = -1 * (imgHeight - resizedHeight);
 				}
-			} else if (this.props.gifAlign === "right") {
+			} else if (gifAlign === "right") {
 				if (imgWidth >= imgHeight) {
 					offsetX = -1 * (imgWidth - resizedWidth);
 				}
@@ -181,7 +183,8 @@ class CanvasGifWrapper extends React.Component {
 	canvasContext = React.createRef();
 
 	render() {
-		return <div ref={this.canvasContext} id={"container"}></div>;
+		const style = Object.assign({}, this.props.style);
+		return <div ref={this.canvasContext} style={style}></div>;
 	}
 }
 

@@ -26,6 +26,7 @@ class Main extends React.Component {
 					maxHeight={200} // 最大高度
 					onCanvasPrintCB={this.onCanvasPrintCallback} // 逐帧绘制时回调
 					gifAlign={"right"} // gif在容器中的位置 center top bottom right left 默认居中
+					style={{}}
 				/>
 			</div>
 		);
