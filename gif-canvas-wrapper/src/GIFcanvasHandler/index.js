@@ -64,8 +64,11 @@ class CanvasGifWrapper extends React.Component {
 	componentDidMount() {
 		const { gifURL } = this.props;
 		if (gifURL) {
-			resolveImage(`${gifURL}`).then(({ width, height }) => {
-				this.animateGIF(width, height, gifURL);
+			resolveImage(`${gifURL}`).then((gif) => {
+				if (gif) {
+					const { width, height } = gif;
+					this.animateGIF(width, height, gifURL);
+				}
 			});
 		}
 	}
