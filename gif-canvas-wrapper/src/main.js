@@ -24,12 +24,12 @@ class Main extends React.Component {
 	};
 
 	componentDidMount() {
-		setTimeout(() => {
+		setInterval(() => {
 			this.setState({
-				width: 300,
-				height: 600,
+				width: Math.random() * 1000,
+				height: Math.random() * 1000,
 			});
-		}, 2000);
+		}, 5000);
 	}
 
 	render() {

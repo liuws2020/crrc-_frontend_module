@@ -49,6 +49,7 @@ class CanvasGifWrapper extends React.Component {
 	width = 0;
 	height = 0;
 	gifNode;
+	currentContext;
 
 	constructor(props) {
 		super(props);
@@ -64,7 +65,7 @@ class CanvasGifWrapper extends React.Component {
 			resolveImage(`${gifURL}`).then((gif) => {
 				if (gif) {
 					const { width, height } = gif;
-					this.gifNode = gif;
+					this.gifNode = { width, height };
 					this.updateClientBounds(width, height);
 					this.animateGIF(gifURL);
 				}
@@ -193,7 +194,20 @@ class CanvasGifWrapper extends React.Component {
 	onDrawFrame = (ctx, { buffer, x, y }) => {
 		const cb = this.props.onCanvasPrintCB;
 		cb instanceof Function && cb.call(null, ctx);
-		ctx.drawImage(buffer, x, y);
+		this.currentContext = ctx;
+		this.currentContext.drawImage(buffer, x, y);
+		if (this.layer.children && this.layer.children.length) {
+			const newChildren = this.layer.children;
+			const ary = this.layer.children.toArray();
+			const len = ary.length;
+			if (len > 1) {
+				for (let i = 0; i < len - 1; i++) {
+					newChildren.splice(i, 1);
+				}
+			}
+
+			this.layer.children = newChildren;
+		}
 		this.layer.draw();
 	};
 
