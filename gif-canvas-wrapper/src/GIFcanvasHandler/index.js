@@ -48,14 +48,11 @@ class CanvasGifWrapper extends React.Component {
 	canvas;
 	width = 0;
 	height = 0;
+	gifNode;
 
 	constructor(props) {
 		super(props);
 		this.canvas = document.createElement("canvas");
-
-		const { maxWidth, maxHeight } = this.props;
-		this.width = maxWidth ? maxWidth : this.canvas.width;
-		this.height = maxHeight ? maxHeight : this.canvas.height;
 
 		this.layer = new Konva.Layer();
 		this.gifler = window.gifler;
@@ -67,15 +64,34 @@ class CanvasGifWrapper extends React.Component {
 			resolveImage(`${gifURL}`).then((gif) => {
 				if (gif) {
 					const { width, height } = gif;
-					this.animateGIF(width, height, gifURL);
+					this.gifNode = gif;
+					this.updateClientBounds(width, height);
+					this.animateGIF(gifURL);
 				}
 			});
 		}
 	}
 
-	animateGIF = (gifWidth, gifHeight, gifURL) => {
-		const imgWidth = this.width;
-		const imgHeight = this.height;
+	componentDidUpdate(preProps) {
+		const { maxWidth, maxHeight } = this.props;
+		if (maxHeight || maxWidth) {
+			if (maxWidth !== preProps.maxWidth || maxHeight !== preProps.maxHeight) {
+				if (this.gifNode) {
+					const { width, height } = this.gifNode;
+					this.updateClientBounds(width, height);
+				}
+			}
+		}
+	}
+
+	animateGIF = (gifURL) => {
+		this.gifler(`${gifURL}`).frames(this.canvas, this.onDrawFrame);
+	};
+
+	updateClientBounds = (gifWidth, gifHeight) => {
+		const { maxWidth, maxHeight } = this.props;
+		const imgWidth = maxWidth ? maxWidth : this.canvas.width;
+		const imgHeight = maxHeight ? maxHeight : this.canvas.height;
 
 		const stage = new Konva.Stage({
 			container: this.canvasContext.current,
@@ -84,8 +100,6 @@ class CanvasGifWrapper extends React.Component {
 		});
 
 		stage.add(this.layer);
-
-		this.gifler(`${gifURL}`).frames(this.canvas, this.onDrawFrame);
 
 		const { resizedWidth, resizedHeight } = autoResize(
 			gifWidth,

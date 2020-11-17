@@ -17,13 +17,29 @@ class Main extends React.Component {
 		安装Gifler：
 		https://www.npmjs.com/package/gifler
 	*/
+
+	state = {
+		width: 400,
+		height: 200,
+	};
+
+	componentDidMount() {
+		setTimeout(() => {
+			this.setState({
+				width: 300,
+				height: 600,
+			});
+		}, 2000);
+	}
+
 	render() {
+		const { width, height } = this.state;
 		return (
 			<div>
 				<GIFcanvasWrapper
 					gifURL={"./resource/circle_a.gif"} // gif存储地址
-					maxWidth={400} // 最大宽度
-					maxHeight={200} // 最大高度
+					maxWidth={width} // 最大宽度
+					maxHeight={height} // 最大高度
 					onCanvasPrintCB={this.onCanvasPrintCallback} // 逐帧绘制时回调
 					gifAlign={"right"} // gif在容器中的位置 center top bottom right left 默认居中
 					style={{}}

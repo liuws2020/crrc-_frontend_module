@@ -73,6 +73,7 @@ class Main extends React.Component {
 					rowsPerPage={9} // 每页的行数(会根据高度自动调整)
 					height={window.innerHeight} // 组件高度
 					titleStyle={{ headerSize: "large", headerStyle: {} }}
+					bodyPadding={{ left: "1%", right: "1%" }}
 					titles={[
 						{
 							text: "故障代码",

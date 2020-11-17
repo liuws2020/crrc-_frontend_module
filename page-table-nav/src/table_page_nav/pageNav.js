@@ -653,7 +653,13 @@ class PageNavTable extends React.Component {
 	tableRef = React.createRef();
 
 	render() {
-		const { tableStyle, tableColor, striped, controlAttr } = this.props;
+		const {
+			tableStyle,
+			tableColor,
+			striped,
+			controlAttr,
+			bodyPadding,
+		} = this.props;
 		const headerStyle = tableStyle ? tableStyle.headerStyle : null;
 		const bodyStyle = tableStyle ? tableStyle.headerStyle : null;
 
@@ -681,6 +687,15 @@ class PageNavTable extends React.Component {
 		const tableHeaderBC =
 			tableCss && tableCss.backgroundColor ? tableCss.backgroundColor : "white";
 
+		let paddingRight = "0.5%";
+		let paddingLeft = "0.5%";
+
+		if (bodyPadding) {
+			const { left, right } = bodyPadding;
+			paddingRight = right;
+			paddingLeft = left;
+		}
+
 		return (
 			<Grid>
 				<Grid.Column width={16} style={{ padding: 0 }}>
@@ -689,9 +704,9 @@ class PageNavTable extends React.Component {
 							style={{
 								height: this.props.height * 0.85,
 								paddingTop: 0,
-								paddingRight: "0.5%",
+								paddingRight,
 								paddingBottom: 0,
-								paddingLeft: "0.5%",
+								paddingLeft,
 								boxShadow: "none",
 								border: "none",
 							}}>
@@ -724,12 +739,14 @@ class PageNavTable extends React.Component {
 							</Ref>
 						</Segment>
 					</Grid.Row>
-					<Grid.Row style={{ paddingRight: "0.5%", paddingLeft: "0.5%" }}>
+					<Grid.Row>
 						<Segment
 							color={tableColor ? tableColor : "white"}
 							inverted={tableColor ? true : false}
 							style={{
 								height: this.props.height * 0.15,
+								marginRight: paddingRight,
+								marginLeft: paddingLeft,
 								borderTopLeftRadius: 0,
 								borderTopRightRadius: 0,
 								backgroundColor: containerBC,
