@@ -141,7 +141,7 @@ class Main extends React.Component {
 					// 控制翻页组件属性
 					rowClickCb={this.rowClickCallback} // 点击行回调
 					tableStyle={{
-						headerStyle: {},
+						headerStyle: { backgroundColor:"green" },
 						bodyStyle: {},
 						opacity: 0.8 /*  backgroundColor:"gray" */,
 					}} // 表格样式： headerStyle表头样式， bodyStyle表格body样式，剩余属性为自身css样式

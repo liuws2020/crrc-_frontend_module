@@ -661,9 +661,8 @@ class PageNavTable extends React.Component {
 			bodyPadding,
 		} = this.props;
 		const headerStyle = tableStyle ? tableStyle.headerStyle : null;
-		const bodyStyle = tableStyle ? tableStyle.headerStyle : null;
-
-		let tableCss = tableStyle;
+		const bodyStyle = tableStyle ? tableStyle.bodyStyle : null;
+		let tableCss = Object.assign({}, tableStyle);
 		tableCss && delete tableCss.headerStyle;
 		tableCss && delete tableCss.bodyStyle;
 
@@ -684,8 +683,18 @@ class PageNavTable extends React.Component {
 			containerBC = "white";
 		}
 
-		const tableHeaderBC =
-			tableCss && tableCss.backgroundColor ? tableCss.backgroundColor : "white";
+		let tableHeaderBC;
+		if (headerStyle && headerStyle.backgroundColor) {
+			tableHeaderBC = headerStyle.backgroundColor;
+		} else if (
+			(!headerStyle || (headerStyle && !headerStyle.backgroundColor)) &&
+			tableCss &&
+			tableCss.backgroundColor
+		) {
+			tableHeaderBC = tableCss.backgroundColor;
+		} else {
+			tableHeaderBC = "white";
+		}
 
 		let paddingRight = "0.5%";
 		let paddingLeft = "0.5%";
@@ -741,7 +750,7 @@ class PageNavTable extends React.Component {
 					</Grid.Row>
 					<Grid.Row>
 						<Segment
-							color={tableColor ? tableColor : "white"}
+							color={tableColor ? tableColor : null}
 							inverted={tableColor ? true : false}
 							style={{
 								height: this.props.height * 0.15,
