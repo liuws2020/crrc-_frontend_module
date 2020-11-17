@@ -11,8 +11,8 @@ class sequenceLine extends React.Component {
 		if (width && height) {
 			const legendTitle = this.svg
 				.append("text")
-				.attr("x", width * 0.05)
-				.attr("y", height * 0.1)
+				.attr("x", width * 0.05 + title.deltaX ? title.deltaX : 0)
+				.attr("y", height * 0.1 + title.deltaY ? title.deltaY : 0)
 				.attr("stroke", title ? title.stroke : "black")
 				.attr("fill", title ? title.fill : "black")
 				.text(title ? title.text : "")

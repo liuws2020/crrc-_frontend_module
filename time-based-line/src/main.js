@@ -99,6 +99,8 @@ class Driver extends React.Component {
 					align: "middle", // 居中，居左，居右
 					stroke: "red", // 描边颜色
 					fill: "orange", // 填充色
+					deltaX: 10, // title横坐标位置增量
+					deltaY: 5, // title纵坐标位置增量
 					style: { fontSize: "120%", fontWeight: "bold" }, // 字体css
 				}} // 可选
 				// 动画持续时间，不想要动画传入0
