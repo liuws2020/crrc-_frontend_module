@@ -1,47 +1,67 @@
 import _ from "lodash";
 const _orderPrefix = "orderPrefix";
+var index;
 
 export const sortByObjAttr = function (ary, key, isDesc, depth) {
 	if (!ary instanceof Array || !key) return null;
 	if (!ary.length) return [];
+	if (ary.length === 1) return [...ary];
 
+	index = 0;
 	const orderby = `${key}`;
 	let sorted = [...ary];
 	const _extractKeyValueOutside = function (oOrVal) {
-		const index = arguments[1];
-		const orderKey = arguments[2];
-        console.log(arguments)
-		if (!oOrVal instanceof Object && orderKey === orderby) {
-			sorted[index][`${_orderPrefix}_${orderby}`] = oOrVal;
+		const orderKey = arguments[1];
+		const currDepth = arguments[2];
+
+		if (!(oOrVal instanceof Object) && orderKey === orderby) {
+			if (!currDepth || (currDepth && currDepth === depth)) {
+				sorted[index][`${_orderPrefix}_${orderby}`] = oOrVal;
+			}
 		}
 	};
 
-	if (!depth || (!isNaN(depth) && (depth === 1 || depth < 0))) {
+	if (parseInt(depth) === 1 || parseInt(depth) < 0) {
 		return _.orderBy(sorted, [key], [isDesc ? "desc" : "asc"]);
 	}
 
 	if (!isNaN(depth) && depth > 1) {
 		for (let i = 0, len = ary.length; i < len; i++) {
-			TraversObject(
-				ary[i],
-				function (child) {
-					_extractKeyValueOutside(child, i);
-				},
-				depth,
-				0
-			);
+			TraversObject(ary[i], _extractKeyValueOutside, depth, 0);
+			index++;
 		}
-    }
-    
-    return _.orderBy(sorted, [`${_orderPrefix}_${orderby}`], [isDesc ? "desc" : "asc"]);
+	}
+
+	if (!depth) {
+		for (let i = 0, len = ary.length; i < len; i++) {
+			TraversObject(ary[i], _extractKeyValueOutside);
+			index++;
+		}
+	}
+
+	let resultList = _.orderBy(
+		sorted,
+		[`${_orderPrefix}_${orderby}`],
+		[isDesc ? "desc" : "asc"]
+	);
+
+	for (let result of resultList) {
+		for (let name in result) {
+			if (name.split("_")[0] === _orderPrefix) {
+				delete result[name];
+			}
+		}
+	}
+
+	return resultList;
 };
 
 export const TraversObject = function (obj, cb, depth, count) {
-	if (count < depth || !depth) {
+	if ((depth && +count < +depth) || !depth) {
 		if (obj instanceof Object) {
 			Object.keys(obj).forEach((key) => {
 				const childObj = obj[key];
-				cb.call(null, childObj, key);
+				cb.call(null, childObj, key, depth);
 				if (childObj instanceof Object) {
 					depth
 						? TraversObject(childObj, cb, depth, count++)
