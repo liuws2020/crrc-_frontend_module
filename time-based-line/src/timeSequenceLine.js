@@ -293,7 +293,9 @@ class sequenceLine extends React.Component {
 		const startWidth = width * 0.25;
 		const gapOfLabelAndText = width * 0.015;
 		let currWidth = startWidth;
-		const r = height * 0.02;
+		const r = configPairs.labelCircleR
+			? configPairs.labelCircleR
+			: height * 0.02;
 		let heightTimes = 0.1;
 		let preTextWidth = 0;
 		for (let color in colorPairCopy) {
