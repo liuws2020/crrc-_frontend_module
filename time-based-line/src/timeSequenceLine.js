@@ -7,7 +7,7 @@ class sequenceLine extends React.Component {
 	crosshairFocus = null;
 	componentDidMount() {
 		this.svg = D3.select(this.svgContextRef.current);
-		const { width, height, title, toolTips } = this.props;
+		const { width, height, title, toolTips, data } = this.props;
 		if (width && height) {
 			const legendTitle = this.svg
 				.append("text")
@@ -84,44 +84,63 @@ class sequenceLine extends React.Component {
 			if (toolTips && toolTips.timePrecision && toolTips.timePrecision.split) {
 				this.timePrecision = toolTips.timePrecision.split(" ");
 			}
+
+			if (data instanceof Array && data.length) {
+				const { x_scale, y_scale, x_domain, y_domain } = this.getScales(data);
+				const keys = this.getKeys(data[0]);
+				this.shaps(data, x_scale, y_scale, keys, x_domain, y_domain);
+			}
 		}
 	}
+
+	getScales = (data) => {
+		const x_extent = D3.extent(data, ({ date }) => date);
+		const x_domain = D3.scaleTime().domain(x_extent);
+		const x_scale = x_domain.range([0, this.props.width]);
+		const vals = [];
+		data.forEach((d) => {
+			for (let key in d) {
+				if (key !== "date") {
+					vals.push(d[key]);
+				}
+			}
+		});
+
+		let y_extent;
+
+		this.props.rangeY
+			? (y_extent = this.props.rangeY)
+			: (y_extent = D3.extent(vals));
+
+		const y_domain = D3.scaleLinear().domain(y_extent);
+		const y_scale = y_domain.range([this.props.height * 0.6, 0]);
+		return {
+			x_domain,
+			y_domain,
+			x_scale,
+			y_scale,
+		};
+	};
 
 	state = {
 		filter: {},
 		coordinate: null,
-		currValPair: null,
+		currValPair: {
+			key: "",
+			date: "",
+			value: null,
+		},
 	};
 
 	componentDidUpdate(preProps, preState) {
 		const data = this.props.data;
 		if (preProps.data !== data && data && data.length) {
-			const x_extent = D3.extent(data, ({ date }) => date);
-			const x_scale = D3.scaleTime()
-				.domain(x_extent)
-				.range([0, this.props.width]);
-			const vals = [];
-			data.forEach((d) => {
-				for (let key in d) {
-					if (key !== "date") {
-						vals.push(d[key]);
-					}
-				}
-			});
-
-			let y_extent;
-
-			this.props.rangeY
-				? (y_extent = this.props.rangeY)
-				: (y_extent = D3.extent(vals));
-			const y_scale = D3.scaleLinear()
-				.domain(y_extent)
-				.range([this.props.height * 0.6, 0]);
+			const { x_scale, y_scale, x_domain, y_domain } = this.getScales(data);
 
 			this.xAxis(x_scale);
 			this.yAxis(y_scale);
 			const keys = this.getKeys(data[0]);
-			this.shaps(data, x_scale, y_scale, keys);
+			this.shaps(data, x_scale, y_scale, keys, x_domain, y_domain);
 		}
 
 		if (this.state.filter !== preState.filter && this.props.configPairs) {
@@ -139,13 +158,16 @@ class sequenceLine extends React.Component {
 			});
 		}
 
+		const { date, value, key } = this.state.currValPair;
 		if (
-			preState.currValPair !== this.state.currValPair &&
 			this.state.currValPair &&
+			date &&
+			value &&
+			key &&
 			this.state.coordinate &&
 			this.props.toolTips
 		) {
-			const { toolTips, height, width } = this.props;
+			const { toolTips, height, width, configPairs } = this.props;
 			const { currValPair, coordinate } = this.state;
 			if (!height || !width) return;
 			this.crosshairFocus.style("display", null);
@@ -189,22 +211,6 @@ class sequenceLine extends React.Component {
 				"bottom"
 			);
 
-			let ykey = "y",
-				yValue = 0;
-
-			const configPairs = this.props.configPairs;
-
-			for (let key in currValPair) {
-				if (key !== "date") {
-					ykey =
-						configPairs && configPairs[key] && configPairs[key].text
-							? configPairs[key].text
-							: key;
-					yValue = currValPair[key];
-					break;
-				}
-			}
-
 			this.textY
 				.attr(
 					"transform",
@@ -214,7 +220,11 @@ class sequenceLine extends React.Component {
 				)
 				.attr("stroke", color)
 				.attr("stroke-width", stokeWidth)
-				.text(`${ykey}: ${yValue ? +yValue.toFixed(2) : 0}`);
+				.text(
+					`${
+						key && configPairs && configPairs[key] ? configPairs[key].text : ""
+					}: ${currValPair.value ? +currValPair.value.toFixed(2) : 0}`
+				);
 		}
 	}
 
@@ -289,13 +299,17 @@ class sequenceLine extends React.Component {
 		const { labelTextFill, configPairs } = this.props;
 		if (!configPairs) return;
 		let colorPairCopy = { ...configPairs };
-		delete colorPairCopy["disableColor"];
+		configPairs.disableColor && delete colorPairCopy["disableColor"];
+
 		const startWidth = width * 0.25;
 		const gapOfLabelAndText = width * 0.015;
 		let currWidth = startWidth;
 		const r = configPairs.labelCircleR
 			? configPairs.labelCircleR
 			: height * 0.02;
+
+		configPairs.labelCircleR && delete colorPairCopy["labelCircleR"];
+
 		let heightTimes = 0.1;
 		let preTextWidth = 0;
 		for (let color in colorPairCopy) {
@@ -421,7 +435,9 @@ class sequenceLine extends React.Component {
 		context.selectAll("path.domain").attr("stroke", color);
 	};
 
-	shaps = (data, xScale, yScale, keys) => {
+	linePaths = {};
+
+	shaps = (data, xScale, yScale, keys, xDomain, yDomain) => {
 		const { width, height, duration, configPairs, displayOption } = this.props;
 		if (!width || !height || !keys || !displayOption || (keys && !keys.length))
 			return;
@@ -462,7 +478,19 @@ class sequenceLine extends React.Component {
 				}
 
 				if (displayOption && displayOption.line && displayOption.line.display) {
-					const line = this.svg.selectAll(`.${key}`).data(data);
+					// const line = this.svg.selectAll(`.${key}`).data(data);
+
+					if (!this.linePaths[key]) {
+						this.linePaths[key] = this.svg
+							.selectAll(`.${key}`)
+							.data(data)
+							.enter()
+							.append("path");
+						this.linePaths[key].on("mousemove", (e) =>
+							this.onLineHover(e, key, xDomain, yDomain)
+						);
+						this.linePaths[key].on("mouseleave", this.mouseLeaveLine);
+					}
 
 					const lineWidth = +displayOption.line.lineWidth;
 					const AntiAliasing = +displayOption.line.antiAliasing;
@@ -486,17 +514,12 @@ class sequenceLine extends React.Component {
 							shapeRendering = "auto";
 					}
 
-					line
-
-						.enter()
-						.append("path")
-						.on("mousemove", (e) => this.onLineHover(e, key, xScale, yScale))
-						.on("mouseleave", this.mouseLeaveLine)
+					this.linePaths[key]
 						.attr("transform", `translate(${width * 0.05}, ${height * 0.225})`)
 						.attr("shape-rendering", shapeRendering)
 						.attr("stroke-linecap", "round")
 						.attr("class", key)
-						.merge(line)
+						.merge(this.linePaths[key])
 						.transition()
 						.duration(duration ? duration : 0)
 						.attr("d", curve(data))
@@ -507,7 +530,11 @@ class sequenceLine extends React.Component {
 						.attr("stroke", color)
 
 						.attr("fill", "none");
-					line.exit().remove().selectAll(`.${key}`).attr("stroke-width", 0);
+					this.linePaths[key]
+						.exit()
+						.remove()
+						.selectAll(`.${key}`)
+						.attr("stroke-width", 0);
 				}
 
 				if (
@@ -562,22 +589,21 @@ class sequenceLine extends React.Component {
 	onShapHover = (evt) => {
 		this.point.x = evt.clientX;
 		this.point.y = evt.clientY;
-		this.setState({
-			coordinate: this.point.matrixTransform(
-				this.svgDOM.getScreenCTM().inverse()
-			),
-		});
 	};
 
 	mouseLeaveShape = () => {
 		this.setState({ coordinate: null });
 	};
 
-	onLineHover = (evt, key) => {
-		let currValPair = {};
+	onLineHover = (evt, key, xDomain, yDomain) => {
+		let currKey = null;
+		let dateStr = null;
 		for (let name in evt) {
 			if (name === key) {
-				const date = new Date(evt.date);
+				currKey = key;
+				const date = new Date(
+					xDomain.invert(this.point.x - this.props.width * 0.05)
+				);
 				const year = date.getFullYear();
 				const month = date.getMonth() + 1;
 				const day = date.getDay();
@@ -632,16 +658,23 @@ class sequenceLine extends React.Component {
 						str = strAry.join("");
 					});
 				}
-				currValPair.date = str;
-				currValPair[key] = evt[key];
+				dateStr = str;
 			}
 		}
-		this.setState({ currValPair });
+
+		this.setState({
+			currValPair: {
+				key: currKey,
+				value: yDomain.invert(this.point.y - this.props.height * 0.85),
+				date: dateStr,
+			},
+			coordinate: this.point.matrixTransform(
+				this.svgDOM.getScreenCTM().inverse()
+			),
+		});
 	};
 
 	mouseLeaveLine = () => {
-		this.setState({ currValPair: null });
-
 		setTimeout(() => {
 			$(this.crosshairFocus._groups[0][0]).fadeOut(200);
 		}, 300);

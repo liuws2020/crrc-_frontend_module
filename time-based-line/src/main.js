@@ -1,8 +1,11 @@
 import React from "react";
-import TimeSequenceLine, { requestInterval, cancelInterval } from "./timeSequenceLine";
+import TimeSequenceLine, {
+	requestInterval,
+	cancelInterval,
+} from "./timeSequenceLine";
 class Driver extends React.Component {
 	state = {
-		width: window.innerWidth / 2.5,
+		width: window.innerWidth,
 		height: window.innerHeight / 3,
 		data: [],
 	};
@@ -48,7 +51,9 @@ class Driver extends React.Component {
 	}
 
 	componentWillUnmount() {
-		cancelInterval(this.loopID.value);
+		if (this.loopID) {
+			cancelInterval(this.loopID.value);
+		}
 	}
 
 	render() {
@@ -88,7 +93,7 @@ class Driver extends React.Component {
 						style: { fontSize: "80%" },
 					}, // 默认折线图
 					disableColor: "green",
-					labelCircleR: 2.5
+					labelCircleR: 2.5,
 				}} // 必须
 				displayOption={{
 					line: { display: true, antiAliasing: 3, lineWidth: 1 }, // antiAliasing 0:不抗锯齿 1:性能优先 2:自动 3:品质优先
@@ -102,7 +107,6 @@ class Driver extends React.Component {
 					fill: "orange", // 填充色
 					deltaX: 10, // title横坐标位置增量
 					deltaY: 5, // title纵坐标位置增量
-					labelR: 2.5,
 					style: { fontSize: "120%", fontWeight: "bold" }, // 字体css
 				}} // 可选
 				// 动画持续时间，不想要动画传入0
@@ -115,7 +119,7 @@ class Driver extends React.Component {
 				yTicks={8} // 可选
 				// x轴文字旋转角度
 				rotateX={30} // 可选
-				rangeY={[0, 50]} // y轴的值固定范围
+				// rangeY={[0, 50]} // y轴的值固定范围
 				// x轴文字旋转角度
 				rotateY={15} // 可选
 				// 日期格式
