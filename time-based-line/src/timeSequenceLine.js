@@ -260,6 +260,7 @@ class sequenceLine extends React.Component {
 			rotateX,
 			chartID,
 			axis,
+			configPairs,
 		} = this.props;
 		if (!width || !height) return;
 		const x_axis = D3.axisBottom().scale(x_scale);
@@ -294,7 +295,8 @@ class sequenceLine extends React.Component {
 
 			rotateX && this.rotateText(g, rotateX, undefined);
 
-			this.appendLabel(width, height);
+			const { labelBaseHeight } = configPairs;
+			this.appendLabel(width, height + labelBaseHeight);
 
 			this.xAxisDOM = D3.select(`#${chartID}_xAxisG`);
 		} else {
@@ -303,8 +305,7 @@ class sequenceLine extends React.Component {
 			g.transition()
 				.duration(duration ? duration : 0)
 				.call(x_axis);
-			axisColor &&
-				g.selectAll(`.tick line`).attr("stroke", axisColor);
+			axisColor && g.selectAll(`.tick line`).attr("stroke", axisColor);
 			rotateX && this.rotateText(g, rotateX, undefined);
 		}
 	};
@@ -323,7 +324,7 @@ class sequenceLine extends React.Component {
 			: height * 0.02;
 
 		configPairs.labelCircleR && delete colorPairCopy["labelCircleR"];
-
+		configPairs.labelBaseHeight && delete colorPairCopy["labelBaseHeight"];
 		let heightTimes = 0.1;
 		let preTextWidth = 0;
 		for (let color in colorPairCopy) {
@@ -453,8 +454,7 @@ class sequenceLine extends React.Component {
 				.duration(duration ? duration : 0)
 				.call(y_axis);
 
-			axisColor &&
-				g.selectAll(`.tick line`).attr("stroke", axisColor);
+			axisColor && g.selectAll(`.tick line`).attr("stroke", axisColor);
 			rotateY && this.rotateText(g, rotateY, "y");
 		}
 	};

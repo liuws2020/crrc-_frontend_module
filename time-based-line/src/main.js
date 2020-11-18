@@ -94,6 +94,7 @@ class Driver extends React.Component {
 					}, // 默认折线图
 					disableColor: "green",
 					labelCircleR: 2.5,
+					labelBaseHeight: 20 // label基础高度
 				}} // 必须
 				displayOption={{
 					line: { display: true, antiAliasing: 3, lineWidth: 1 }, // antiAliasing 0:不抗锯齿 1:性能优先 2:自动 3:品质优先
