@@ -258,6 +258,7 @@ class sequenceLine extends React.Component {
 			xTicks,
 			dateStrFormatter,
 			rotateX,
+			chartID,
 		} = this.props;
 		if (!width || !height) return;
 		const x_axis = D3.axisBottom().scale(x_scale);
@@ -268,7 +269,7 @@ class sequenceLine extends React.Component {
 		if (!this.xAxisDOM) {
 			const g = this.svg
 				.append("g")
-				.attr("id", "xAxisG")
+				.attr("id", `${chartID}_xAxisG`)
 				.attr("transform", `translate(${width * 0.05}, ${height * 0.85})`);
 
 			axisColor && g.style("stroke", axisColor);
@@ -277,26 +278,27 @@ class sequenceLine extends React.Component {
 				.duration(duration ? duration : 0)
 				.call(x_axis);
 
-			axisColor && this.applyAxisColor(g, axisColor);
+			axisColor && this.applyAxisColor(g, axisColor, chartID);
 
-			rotateX && this.rotateText(g, rotateX);
+			rotateX && this.rotateText(g, rotateX, undefined, chartID);
 
 			this.appendLabel(width, height);
 
-			this.xAxisDOM = D3.select("#xAxisG");
+			this.xAxisDOM = D3.select(`#${chartID}_xAxisG`);
 		} else {
 			const g = this.xAxisDOM;
 
 			g.transition()
 				.duration(duration ? duration : 0)
 				.call(x_axis);
-			axisColor && g.selectAll(".tick line").attr("stroke", axisColor);
-			rotateX && this.rotateText(g, rotateX);
+			axisColor &&
+				g.selectAll(`.${chartID}_tick line`).attr("stroke", axisColor);
+			rotateX && this.rotateText(g, rotateX, undefined, chartID);
 		}
 	};
 
 	appendLabel = (width, height) => {
-		const { labelTextFill, configPairs } = this.props;
+		const { labelTextFill, configPairs, chartID } = this.props;
 		if (!configPairs) return;
 		let colorPairCopy = { ...configPairs };
 		configPairs.disableColor && delete colorPairCopy["disableColor"];
@@ -323,7 +325,7 @@ class sequenceLine extends React.Component {
 				.attr("cx", currWidth)
 				.attr("cy", height * heightTimes)
 				.attr("r", r)
-				.attr("class", `${color}_label`)
+				.attr("class", `${color}_${chartID}_label`)
 				.style("cursor", "pointer")
 				.attr(
 					"fill",
@@ -388,7 +390,15 @@ class sequenceLine extends React.Component {
 	};
 
 	yAxis = (y_scale) => {
-		const { width, height, duration, axisColor, yTicks, rotateY } = this.props;
+		const {
+			width,
+			height,
+			duration,
+			axisColor,
+			yTicks,
+			rotateY,
+			chartID,
+		} = this.props;
 		if (!width || !height) return;
 
 		const y_axis = D3.axisLeft().scale(y_scale);
@@ -398,7 +408,7 @@ class sequenceLine extends React.Component {
 		if (!this.yAxisDOM) {
 			const g = this.svg
 				.append("g")
-				.attr("id", "yAxisG")
+				.attr("id", `${chartID}_yAxisG`)
 				.attr("transform", `translate(${width * 0.05}, ${height * 0.225})`);
 
 			axisColor && g.style("stroke", axisColor);
@@ -407,38 +417,46 @@ class sequenceLine extends React.Component {
 				.duration(duration ? duration : 0)
 				.call(y_axis);
 
-			axisColor && this.applyAxisColor(g, axisColor);
+			axisColor && this.applyAxisColor(g, axisColor, chartID);
 
-			rotateY && this.rotateText(g, rotateY, "y");
+			rotateY && this.rotateText(g, rotateY, "y", chartID);
 
-			this.yAxisDOM = D3.select("#yAxisG");
+			this.yAxisDOM = D3.select(`#${chartID}_yAxisG`);
 		} else {
 			const g = this.yAxisDOM;
 			g.transition()
 				.duration(duration ? duration : 0)
 				.call(y_axis);
 
-			axisColor && g.selectAll(".tick line").attr("stroke", axisColor);
-			rotateY && this.rotateText(g, rotateY, "y");
+			axisColor &&
+				g.selectAll(`.${chartID}_tick line`).attr("stroke", axisColor);
+			rotateY && this.rotateText(g, rotateY, "y", chartID);
 		}
 	};
 
-	rotateText = (context, degree, y) => {
+	rotateText = (context, degree, y, chartID) => {
 		context
-			.selectAll(".tick text")
+			.selectAll(`.${chartID}_tick text`)
 			.attr("transform", `rotate(${degree})`)
 			.style("text-anchor", y ? "end" : "start");
 	};
 
-	applyAxisColor = (context, color) => {
-		context.selectAll(".tick line").attr("stroke", color);
+	applyAxisColor = (context, color, chartID) => {
+		context.selectAll(`.${chartID}_tick line`).attr("stroke", color);
 		context.selectAll("path.domain").attr("stroke", color);
 	};
 
 	linePaths = {};
 
 	shaps = (data, xScale, yScale, keys, xDomain, yDomain) => {
-		const { width, height, duration, configPairs, displayOption } = this.props;
+		const {
+			width,
+			height,
+			duration,
+			configPairs,
+			displayOption,
+			chartID,
+		} = this.props;
 		if (!width || !height || !keys || !displayOption || (keys && !keys.length))
 			return;
 
@@ -482,7 +500,7 @@ class sequenceLine extends React.Component {
 
 					if (!this.linePaths[key]) {
 						this.linePaths[key] = this.svg
-							.selectAll(`.${key}`)
+							.selectAll(`.${chartID}_${key}`)
 							.data(data)
 							.enter()
 							.append("path");
@@ -518,7 +536,7 @@ class sequenceLine extends React.Component {
 						.attr("transform", `translate(${width * 0.05}, ${height * 0.225})`)
 						.attr("shape-rendering", shapeRendering)
 						.attr("stroke-linecap", "round")
-						.attr("class", key)
+						.attr("class", `${chartID}_${key}`)
 						.merge(this.linePaths[key])
 						.transition()
 						.duration(duration ? duration : 0)
@@ -542,11 +560,13 @@ class sequenceLine extends React.Component {
 					displayOption.scatter &&
 					displayOption.scatter.display
 				) {
-					const circle = this.svg.selectAll(`.${key}_circle`).data(data);
+					const circle = this.svg
+						.selectAll(`.${key}_${chartID}_circle`)
+						.data(data);
 					circle
 						.enter()
 						.append("circle")
-						.attr("class", `${key}_circle`)
+						.attr("class", `${key}_${chartID}_circle`)
 						.attr("transform", `translate(${width * 0.05}, ${height * 0.225})`)
 						.attr("cx", ({ date }) => {
 							if (date instanceof Date) {
@@ -574,8 +594,8 @@ class sequenceLine extends React.Component {
 					circle.exit().remove();
 				}
 			} else {
-				const $path = $(`.${key}`);
-				const $circle = $(`.${key}_circle`);
+				const $path = $(`.${chartID}_${key}`);
+				const $circle = $(`.${key}_${chartID}_circle`);
 				$path[0] && $path.fadeOut(275);
 				$circle[0] && $circle.fadeOut(275);
 				setTimeout(() => {
@@ -688,12 +708,12 @@ class sequenceLine extends React.Component {
 
 	render() {
 		const { style, chartID, width, height, backgroundColor } = this.props;
-		if (!width || !height) {
+		if (!width || !height || !chartID) {
 			return null;
 		}
 		return (
 			<svg
-				id={chartID ? chartID : "default_svg_id"}
+				id={chartID}
 				width={width}
 				height={height}
 				ref={this.svgContextRef}

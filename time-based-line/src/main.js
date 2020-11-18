@@ -62,7 +62,7 @@ class Driver extends React.Component {
 		return (
 			<TimeSequenceLine
 				// 图表ID，必须保证在当前项目的唯一性
-				// chartID={"demo"} // 可选
+				chartID={"demo"}
 				// 绑定state的数据达到实时更新效果
 				// 格式[{date:Date, key:value, ...}]
 				// 时序数据每个数组元素必须含有date对象以及相应的date键
