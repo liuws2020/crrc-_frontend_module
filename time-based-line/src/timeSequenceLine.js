@@ -7,7 +7,7 @@ class sequenceLine extends React.Component {
 	crosshairFocus = null;
 	componentDidMount() {
 		this.svg = D3.select(this.svgContextRef.current);
-		const { width, height, title, toolTips, data } = this.props;
+		const { width, height, title, toolTips, data, chartID } = this.props;
 		if (width && height) {
 			const legendTitle = this.svg
 				.append("text")
@@ -27,12 +27,12 @@ class sequenceLine extends React.Component {
 			this.crosshairFocus = this.svg.append("g").style("display", "none");
 			this.lineX = this.crosshairFocus
 				.append("line")
-				.attr("class", "x")
+				.attr("class", `${chartID}_x`)
 				.attr("y1", 0)
 				.attr("y2", height);
 			this.lineY = this.crosshairFocus
 				.append("line")
-				.attr("class", "y")
+				.attr("class", `${chartID}_y`)
 				.attr("x1", width)
 				.attr("x2", width);
 
@@ -43,7 +43,7 @@ class sequenceLine extends React.Component {
 
 			this.textX = this.crosshairFocus
 				.append("text")
-				.attr("class", "text_x")
+				.attr("class", `${chartID}_text_x`)
 				.attr("fill", toolTips && toolTips.fill ? toolTips.fill : "black")
 				.attr("stroke", toolTips && toolTips.stroke ? toolTips.stroke : "black")
 				.attr(
@@ -61,7 +61,7 @@ class sequenceLine extends React.Component {
 
 			this.textY = this.crosshairFocus
 				.append("text")
-				.attr("class", "text_y")
+				.attr("class", `${chartID}_text_y`)
 				.attr("fill", toolTips && toolTips.fill ? toolTips.fill : "black")
 				.attr("stroke", toolTips && toolTips.stroke ? toolTips.stroke : "black")
 				.attr(
@@ -259,18 +259,30 @@ class sequenceLine extends React.Component {
 			dateStrFormatter,
 			rotateX,
 			chartID,
+			axis,
 		} = this.props;
 		if (!width || !height) return;
 		const x_axis = D3.axisBottom().scale(x_scale);
 
 		if (xTicks && !isNaN(xTicks)) x_axis.ticks(xTicks);
+		let transAxisX = 0;
+		let transAxisY = 0;
+		if (axis && axis.deltaXAxis) {
+			transAxisX = axis.deltaXAxis.x ? +axis.deltaXAxis.x : 0;
+			transAxisY = axis.deltaXAxis.y ? +axis.deltaXAxis.y : 0;
+		}
 
 		dateStrFormatter && x_axis.tickFormat(D3.timeFormat(dateStrFormatter));
 		if (!this.xAxisDOM) {
 			const g = this.svg
 				.append("g")
 				.attr("id", `${chartID}_xAxisG`)
-				.attr("transform", `translate(${width * 0.05}, ${height * 0.85})`);
+				.attr(
+					"transform",
+					`translate(${width * 0.05 + transAxisX}, ${
+						height * 0.85 + transAxisY
+					})`
+				);
 
 			axisColor && g.style("stroke", axisColor);
 
@@ -278,9 +290,9 @@ class sequenceLine extends React.Component {
 				.duration(duration ? duration : 0)
 				.call(x_axis);
 
-			axisColor && this.applyAxisColor(g, axisColor, chartID);
+			axisColor && this.applyAxisColor(g, axisColor);
 
-			rotateX && this.rotateText(g, rotateX, undefined, chartID);
+			rotateX && this.rotateText(g, rotateX, undefined);
 
 			this.appendLabel(width, height);
 
@@ -292,8 +304,8 @@ class sequenceLine extends React.Component {
 				.duration(duration ? duration : 0)
 				.call(x_axis);
 			axisColor &&
-				g.selectAll(`.${chartID}_tick line`).attr("stroke", axisColor);
-			rotateX && this.rotateText(g, rotateX, undefined, chartID);
+				g.selectAll(`.tick line`).attr("stroke", axisColor);
+			rotateX && this.rotateText(g, rotateX, undefined);
 		}
 	};
 
@@ -398,10 +410,18 @@ class sequenceLine extends React.Component {
 			yTicks,
 			rotateY,
 			chartID,
+			axis,
 		} = this.props;
 		if (!width || !height) return;
 
 		const y_axis = D3.axisLeft().scale(y_scale);
+
+		let transAxisX = 0;
+		let transAxisY = 0;
+		if (axis && axis.deltaYAxis) {
+			transAxisX = axis.deltaYAxis.x ? +axis.deltaYAxis.x : 0;
+			transAxisY = axis.deltaYAxis.y ? +axis.deltaYAxis.y : 0;
+		}
 
 		if (yTicks && !isNaN(yTicks)) y_axis.ticks(yTicks);
 
@@ -409,7 +429,12 @@ class sequenceLine extends React.Component {
 			const g = this.svg
 				.append("g")
 				.attr("id", `${chartID}_yAxisG`)
-				.attr("transform", `translate(${width * 0.05}, ${height * 0.225})`);
+				.attr(
+					"transform",
+					`translate(${width * 0.05 + transAxisX}, ${
+						height * 0.225 + transAxisY
+					})`
+				);
 
 			axisColor && g.style("stroke", axisColor);
 
@@ -417,9 +442,9 @@ class sequenceLine extends React.Component {
 				.duration(duration ? duration : 0)
 				.call(y_axis);
 
-			axisColor && this.applyAxisColor(g, axisColor, chartID);
+			axisColor && this.applyAxisColor(g, axisColor);
 
-			rotateY && this.rotateText(g, rotateY, "y", chartID);
+			rotateY && this.rotateText(g, rotateY, "y");
 
 			this.yAxisDOM = D3.select(`#${chartID}_yAxisG`);
 		} else {
@@ -429,20 +454,20 @@ class sequenceLine extends React.Component {
 				.call(y_axis);
 
 			axisColor &&
-				g.selectAll(`.${chartID}_tick line`).attr("stroke", axisColor);
-			rotateY && this.rotateText(g, rotateY, "y", chartID);
+				g.selectAll(`.tick line`).attr("stroke", axisColor);
+			rotateY && this.rotateText(g, rotateY, "y");
 		}
 	};
 
-	rotateText = (context, degree, y, chartID) => {
+	rotateText = (context, degree, y) => {
 		context
-			.selectAll(`.${chartID}_tick text`)
+			.selectAll(`.tick text`)
 			.attr("transform", `rotate(${degree})`)
 			.style("text-anchor", y ? "end" : "start");
 	};
 
-	applyAxisColor = (context, color, chartID) => {
-		context.selectAll(`.${chartID}_tick line`).attr("stroke", color);
+	applyAxisColor = (context, color) => {
+		context.selectAll(`.tick line`).attr("stroke", color);
 		context.selectAll("path.domain").attr("stroke", color);
 	};
 
@@ -456,6 +481,7 @@ class sequenceLine extends React.Component {
 			configPairs,
 			displayOption,
 			chartID,
+			axis,
 		} = this.props;
 		if (!width || !height || !keys || !displayOption || (keys && !keys.length))
 			return;
@@ -495,9 +521,14 @@ class sequenceLine extends React.Component {
 					color = configPairs[key].color;
 				}
 
-				if (displayOption && displayOption.line && displayOption.line.display) {
-					// const line = this.svg.selectAll(`.${key}`).data(data);
+				let transAxisX = 0;
+				let transAxisY = 0;
+				if (axis && axis.deltaYAxis) {
+					transAxisX = axis.deltaYAxis.x ? +axis.deltaYAxis.x : 0;
+					transAxisY = axis.deltaYAxis.y ? +axis.deltaYAxis.y : 0;
+				}
 
+				if (displayOption && displayOption.line && displayOption.line.display) {
 					if (!this.linePaths[key]) {
 						this.linePaths[key] = this.svg
 							.selectAll(`.${chartID}_${key}`)
@@ -533,7 +564,12 @@ class sequenceLine extends React.Component {
 					}
 
 					this.linePaths[key]
-						.attr("transform", `translate(${width * 0.05}, ${height * 0.225})`)
+						.attr(
+							"transform",
+							`translate(${width * 0.05 + transAxisX}, ${
+								height * 0.225 + transAxisY
+							})`
+						)
 						.attr("shape-rendering", shapeRendering)
 						.attr("stroke-linecap", "round")
 						.attr("class", `${chartID}_${key}`)
@@ -567,7 +603,12 @@ class sequenceLine extends React.Component {
 						.enter()
 						.append("circle")
 						.attr("class", `${key}_${chartID}_circle`)
-						.attr("transform", `translate(${width * 0.05}, ${height * 0.225})`)
+						.attr(
+							"transform",
+							`translate(${width * 0.05 + transAxisX}, ${
+								height * 0.225 + transAxisY
+							})`
+						)
 						.attr("cx", ({ date }) => {
 							if (date instanceof Date) {
 								return xScale(date);
@@ -606,9 +647,9 @@ class sequenceLine extends React.Component {
 		}
 	};
 
-	onShapHover = (evt) => {
-		this.point.x = evt.clientX;
-		this.point.y = evt.clientY;
+	onShapHover = ({ clientX, clientY }) => {
+		this.point.x = clientX;
+		this.point.y = clientY;
 	};
 
 	mouseLeaveShape = () => {
@@ -618,11 +659,21 @@ class sequenceLine extends React.Component {
 	onLineHover = (evt, key, xDomain, yDomain) => {
 		let currKey = null;
 		let dateStr = null;
+
+		const coordinate = this.point.matrixTransform(
+			this.svgDOM.getScreenCTM().inverse()
+		);
+		const { axis } = this.props;
+		let transAxisX = 0;
+		if (axis && axis.deltaXAxis) {
+			transAxisX = axis.deltaXAxis.x ? +axis.deltaXAxis.x : 0;
+		}
+
 		for (let name in evt) {
 			if (name === key) {
 				currKey = key;
 				const date = new Date(
-					xDomain.invert(this.point.x - this.props.width * 0.05)
+					xDomain.invert(coordinate.x - (this.props.width * 0.05 + transAxisX))
 				);
 				const year = date.getFullYear();
 				const month = date.getMonth() + 1;
@@ -682,15 +733,20 @@ class sequenceLine extends React.Component {
 			}
 		}
 
+		let transAxisY = 0;
+		if (axis && axis.deltaYAxis) {
+			transAxisY = axis.deltaYAxis.y ? +axis.deltaYAxis.y : 0;
+		}
+
 		this.setState({
 			currValPair: {
 				key: currKey,
-				value: yDomain.invert(this.point.y - this.props.height * 0.85),
+				value: yDomain.invert(
+					coordinate.y - (this.props.height * 0.225 + transAxisY)
+				),
 				date: dateStr,
 			},
-			coordinate: this.point.matrixTransform(
-				this.svgDOM.getScreenCTM().inverse()
-			),
+			coordinate,
 		});
 	};
 

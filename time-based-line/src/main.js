@@ -33,7 +33,7 @@ class Driver extends React.Component {
 			d.shift();
 			d.push({
 				date: new Date() - Math.random() * 1000,
-				tweets: null,
+				tweets: Math.random() * 5,
 				retweets: Math.random() * 20,
 				favourites: Math.random() * 50,
 			});
@@ -143,6 +143,10 @@ class Driver extends React.Component {
 					style: {
 						opacity: 0.5,
 					},
+				}}
+				axis={{
+					deltaXAxis: { x: 20, y: 10 },
+					deltaYAxis: { x: 20, y: 10 },
 				}}
 			/>
 		);
