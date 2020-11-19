@@ -1,5 +1,5 @@
 import ReactDOM from "react-dom";
 import React from "react";
-import Main from "./main";
+import RealtimeSafeReques from "./realtimeSafeRequestTestDriver";
 
-ReactDOM.render(<Main />, document.getElementById("root"));
+ReactDOM.render(<RealtimeSafeReques />, document.getElementById("root"));

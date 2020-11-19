@@ -2,11 +2,11 @@ import React from "react";
 import TimeSequenceLine, {
 	requestInterval,
 	cancelInterval,
-} from "./timeSequenceLine";
+} from "./timeFlowSequenceComponent/d3SequenceDataFlow";
 class Driver extends React.Component {
 	state = {
 		width: window.innerWidth,
-		height: window.innerHeight / 3,
+		height: window.innerHeight / 2,
 		data: [],
 	};
 
@@ -48,6 +48,12 @@ class Driver extends React.Component {
 
 	componentDidMount() {
 		this.simulate();
+		setTimeout(() => {
+			this.setState({
+				width: window.innerWidth / 2,
+				height: window.innerHeight,
+			});
+		}, 3000);
 	}
 
 	componentWillUnmount() {
@@ -93,8 +99,8 @@ class Driver extends React.Component {
 						style: { fontSize: "80%" },
 					}, // 默认折线图
 					disableColor: "green",
-					labelCircleR: 2.5,
-					labelBaseHeight: 20 // label基础高度
+					labelCircleR: 5,
+					labelBaseHeight: 20, // label基础高度
 				}} // 必须
 				displayOption={{
 					line: { display: true, antiAliasing: 3, lineWidth: 1 }, // antiAliasing 0:不抗锯齿 1:性能优先 2:自动 3:品质优先
