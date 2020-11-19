@@ -53,7 +53,7 @@ class Driver extends React.Component {
 				width: window.innerWidth / 2,
 				height: window.innerHeight,
 			});
-		}, 3000);
+		}, 7000);
 	}
 
 	componentWillUnmount() {
@@ -67,8 +67,8 @@ class Driver extends React.Component {
 		// 必须先安装D3 5.16版本以上，jquery 3.51版本以上
 		return (
 			<TimeSequenceLine
-				// 图表ID，必须保证在当前项目的唯一性
-				chartID={"demo"}
+				// 图表ID 需要操作svg时候可用，非必须
+				// chartID={"demo"}
 				// 绑定state的数据达到实时更新效果
 				// 格式[{date:Date, key:value, ...}]
 				// 时序数据每个数组元素必须含有date对象以及相应的date键

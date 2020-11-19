@@ -359,7 +359,7 @@ class sequenceLine extends React.Component {
 
 			rotateX && this.rotateText(g, rotateX, undefined);
 
-			this.xAxisDOM = D3.select(`#${chartID}_xAxisG`);
+			this.xAxisDOM = this.svg.select(`#${chartID}_xAxisG`);
 		} else {
 			const g = this.xAxisDOM;
 
@@ -500,7 +500,7 @@ class sequenceLine extends React.Component {
 
 			rotateY && this.rotateText(g, rotateY, "y");
 
-			this.yAxisDOM = D3.select(`#${chartID}_yAxisG`);
+			this.yAxisDOM = this.svg.select(`#${chartID}_yAxisG`);
 		} else {
 			const g = this.yAxisDOM;
 			g.transition()
@@ -820,6 +820,10 @@ class sequenceLine extends React.Component {
 		);
 	}
 }
+
+sequenceLine.defaultProps = {
+	chartID: "default_svg_id",
+};
 
 export default sequenceLine;
 
