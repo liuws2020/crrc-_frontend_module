@@ -659,7 +659,7 @@ class sequenceLine extends React.Component {
 				) {
 					const circle = this.svg
 						.selectAll(`.${key}_${chartID}_circle`)
-						.data([data]);
+						.data(data);
 					circle
 						.enter()
 						.append("circle")
