@@ -350,6 +350,9 @@ class sequenceLine extends React.Component {
 				);
 
 			axisColor && g.style("stroke", axisColor);
+			axis &&
+				axis.xFontStyle &&
+				$(g._groups[0][0]).css(Object.assign({}, axis.xFontStyle));
 
 			g.transition()
 				.duration(duration ? duration : 0)
@@ -359,7 +362,7 @@ class sequenceLine extends React.Component {
 
 			rotateX && this.rotateText(g, rotateX, undefined);
 
-			this.xAxisDOM = this.svg.select(`#${chartID}_xAxisG`);
+			this.xAxisDOM = g;
 		} else {
 			const g = this.xAxisDOM;
 
@@ -416,7 +419,7 @@ class sequenceLine extends React.Component {
 						: "black",
 			});
 			$(labelDOM).on("click", () => {
-				this.onLableClick(color);
+				this.onLableClick(color, chartID);
 			});
 			const textContent =
 				configPairs[color] && configPairs[color].text
@@ -428,6 +431,7 @@ class sequenceLine extends React.Component {
 				.attr("class", `${color}_${chartID}_text`)
 				.attr("x", currWidth + gapOfLabelAndText)
 				.attr("y", height * heightTimes)
+				.attr("cursor", "default")
 				.attr("fill", labelTextFill)
 				.text(textContent ? textContent : "")
 				.attr("alignment-baseline", "middle");
@@ -450,7 +454,9 @@ class sequenceLine extends React.Component {
 		}
 	};
 
-	onLableClick = (color) => {
+	displayLines = {};
+
+	onLableClick = (color, chartID) => {
 		if (this.state.filter[color]) {
 			this.setState(() => {
 				let copy = { ...this.state.filter };
@@ -461,6 +467,19 @@ class sequenceLine extends React.Component {
 			let copy = { ...this.state.filter };
 			copy[color] = true;
 			this.setState({ filter: copy });
+		}
+
+		const linePath = this.svg.select(`.${chartID}_${color}`)._groups[0][0];
+		const circlePath = this.svg.select(`.${color}_${chartID}_circle`)
+			._groups[0][0];
+		if (this.displayLines[color] || this.displayLines[color] === undefined) {
+			linePath && $(linePath).fadeOut(200);
+			circlePath && $(circlePath).fadeOut(200);
+			this.displayLines[color] = false;
+		} else {
+			linePath && $(linePath).fadeIn(200);
+			circlePath && $(circlePath).fadeIn(200);
+			this.displayLines[color] = true;
 		}
 	};
 
@@ -491,6 +510,9 @@ class sequenceLine extends React.Component {
 				);
 
 			axisColor && g.style("stroke", axisColor);
+			axis &&
+				axis.yFontStyle &&
+				$(g._groups[0][0]).css(Object.assign({}, axis.yFontStyle));
 
 			g.transition()
 				.duration(duration ? duration : 0)
@@ -500,7 +522,7 @@ class sequenceLine extends React.Component {
 
 			rotateY && this.rotateText(g, rotateY, "y");
 
-			this.yAxisDOM = this.svg.select(`#${chartID}_yAxisG`);
+			this.yAxisDOM = g;
 		} else {
 			const g = this.yAxisDOM;
 			g.transition()
@@ -601,7 +623,8 @@ class sequenceLine extends React.Component {
 						default:
 							shapeRendering = "auto";
 					}
-					const line = this.svg.selectAll(`.${chartID}_${key}`).data(data);
+					const line = this.svg.selectAll(`.${chartID}_${key}`).data([data]);
+
 					line
 						.enter()
 						.append("path")
@@ -625,9 +648,8 @@ class sequenceLine extends React.Component {
 							lineWidth && !isNaN(lineWidth) ? lineWidth : 1
 						)
 						.attr("stroke", color)
-
 						.attr("fill", "none");
-					line.exit().remove().selectAll(`.${key}`).attr("stroke-width", 0);
+					line.exit().selectAll(`.${chartID}_${key}`).remove();
 				}
 
 				if (
@@ -637,7 +659,7 @@ class sequenceLine extends React.Component {
 				) {
 					const circle = this.svg
 						.selectAll(`.${key}_${chartID}_circle`)
-						.data(data);
+						.data([data]);
 					circle
 						.enter()
 						.append("circle")
@@ -671,7 +693,7 @@ class sequenceLine extends React.Component {
 						.attr("cx", ({ date }) => xScale(date))
 						.attr("cy", (d) => yScale(d[key]))
 						.style("fill", color);
-					circle.exit().remove();
+					circle.exit().selectAll(`.${key}_${chartID}_circle`).remove();
 				}
 			} else {
 				const $path = $(`.${chartID}_${key}`);
@@ -695,11 +717,9 @@ class sequenceLine extends React.Component {
 		this.setState({ coordinate: null });
 	};
 
-	isHover = false;
 	onLineHover = (evt, key, xDomain, yDomain) => {
 		let currKey = null;
 		let dateStr = null;
-		this.isHover = true;
 
 		const coordinate = this.point.matrixTransform(
 			this.svgDOM.getScreenCTM().inverse()
@@ -710,12 +730,15 @@ class sequenceLine extends React.Component {
 			transAxisX = axis.deltaXAxis.x ? +axis.deltaXAxis.x : 0;
 		}
 
-		for (let name in evt) {
+		if (!evt[0]) return;
+
+		for (let name in evt[0]) {
 			if (name === key) {
 				currKey = key;
 				const date = new Date(
 					xDomain.invert(coordinate.x - (this.props.width * 0.05 + transAxisX))
 				);
+
 				const year = date.getFullYear();
 				const month = date.getMonth() + 1;
 				const day = date.getDay();

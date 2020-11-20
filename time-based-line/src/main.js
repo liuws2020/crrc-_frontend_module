@@ -48,12 +48,12 @@ class Driver extends React.Component {
 
 	componentDidMount() {
 		this.simulate();
-		setTimeout(() => {
+	/* 	setTimeout(() => {
 			this.setState({
 				width: window.innerWidth / 2,
 				height: window.innerHeight,
 			});
-		}, 7000);
+		}, 7000); */
 	}
 
 	componentWillUnmount() {
@@ -68,7 +68,7 @@ class Driver extends React.Component {
 		return (
 			<TimeSequenceLine
 				// 图表ID 需要操作svg时候可用，非必须
-				// chartID={"demo"}
+				// * chartID={"demo"}
 				// 绑定state的数据达到实时更新效果
 				// 格式[{date:Date, key:value, ...}]
 				// 时序数据每个数组元素必须含有date对象以及相应的date键
@@ -103,7 +103,7 @@ class Driver extends React.Component {
 					labelBaseHeight: 20, // label基础高度
 				}} // 必须
 				displayOption={{
-					line: { display: true, antiAliasing: 3, lineWidth: 1 }, // antiAliasing 0:不抗锯齿 1:性能优先 2:自动 3:品质优先
+					line: { display: true, antiAliasing: 3, lineWidth: 3 }, // antiAliasing 0:不抗锯齿 1:性能优先 2:自动 3:品质优先
 					scatter: { display: true, r: 2 },
 				}}
 				// 图表主题
@@ -121,12 +121,12 @@ class Driver extends React.Component {
 				// 坐标轴颜色
 				axisColor='red' // 可选
 				// x轴刻度参考数
-				// xTicks={5} // 可选
+				// * xTicks={5} // 可选
 				// y轴刻度参考数
 				yTicks={8} // 可选
 				// x轴文字旋转角度
 				rotateX={30} // 可选
-				// rangeY={[0, 50]} // y轴的值固定范围
+				// * rangeY={[0, 50]} // y轴的值固定范围
 				// x轴文字旋转角度
 				rotateY={15} // 可选
 				// 日期格式
@@ -152,8 +152,10 @@ class Driver extends React.Component {
 					},
 				}}
 				axis={{
-					deltaXAxis: { x: 20, y: 10 },
-					deltaYAxis: { x: 20, y: 10 },
+					deltaXAxis: { x: 20, y: 10 }, // x 轴偏移量		
+					deltaYAxis: { x: 20, y: 10 }, // y 轴偏移量
+					xFontStyle: { fontSize: "40%" }, // x 轴字体css
+					yFontStyle: { fontWeight: "bold" }, // y 轴字体cssS
 				}}
 			/>
 		);
