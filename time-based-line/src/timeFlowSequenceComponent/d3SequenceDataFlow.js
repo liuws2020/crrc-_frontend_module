@@ -597,7 +597,7 @@ class sequenceLine extends React.Component {
 				let transAxisX = 0;
 				let transAxisY = 0;
 				if (axis && axis.deltaYAxis) {
-					transAxisX = axis.deltaYAxis.x ? +axis.deltaYAxis.x : 0;
+					transAxisX = axis.deltaXAxis.x ? +axis.deltaXAxis.x : 0;
 					transAxisY = axis.deltaYAxis.y ? +axis.deltaYAxis.y : 0;
 				}
 

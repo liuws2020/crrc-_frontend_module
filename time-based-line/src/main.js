@@ -152,8 +152,8 @@ class Driver extends React.Component {
 					},
 				}}
 				axis={{
-					deltaXAxis: { x: 20, y: 10 }, // x 轴偏移量		
-					deltaYAxis: { x: 20, y: 10 }, // y 轴偏移量
+					deltaXAxis: { x: 100, y: 10 }, // x 轴偏移量		
+					deltaYAxis: { x: 20, y: 60 }, // y 轴偏移量
 					xFontStyle: { fontSize: "40%" }, // x 轴字体css
 					yFontStyle: { fontWeight: "bold" }, // y 轴字体cssS
 				}}
