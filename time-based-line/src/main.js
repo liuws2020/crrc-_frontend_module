@@ -103,7 +103,7 @@ class Driver extends React.Component {
 					labelBaseHeight: 20, // label基础高度
 				}} // 必须
 				displayOption={{
-					line: { display: true, antiAliasing: 3, lineWidth: 3 }, // antiAliasing 0:不抗锯齿 1:性能优先 2:自动 3:品质优先
+					line: { display: true, antiAliasing: 3, lineWidth: 2 }, // antiAliasing 0:不抗锯齿 1:性能优先 2:自动 3:品质优先
 					scatter: { display: true, r: 2 },
 				}}
 				// 图表主题
@@ -154,8 +154,8 @@ class Driver extends React.Component {
 				axis={{
 					deltaXAxis: { x: 100, y: 10 }, // x 轴偏移量		
 					deltaYAxis: { x: 20, y: 60 }, // y 轴偏移量
-					xFontStyle: { fontSize: "40%" }, // x 轴字体css
-					yFontStyle: { fontWeight: "bold" }, // y 轴字体cssS
+					xFontStyle: { fontSize: "100%" }, // x 轴字体css
+					yFontStyle: { fontWeight: "bold" }, // y 轴字体css
 				}}
 			/>
 		);

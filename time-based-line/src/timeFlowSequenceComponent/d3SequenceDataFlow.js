@@ -862,7 +862,7 @@ export const requestInterval = function (fn, delay) {
 	let start = new Date().getTime();
 	let handle = {};
 	function loop() {
-		handle.value = requestAnimeFrame(loop);
+		handle.timeStamp = requestAnimeFrame(loop);
 		const current = new Date().getTime(),
 			delta = current - start;
 		if (delta >= delay) {
