@@ -83,7 +83,7 @@ class Driver extends React.Component {
 					tweets: {
 						color: "#5eaec5",
 						text: "发推数",
-						lineType: "curve",
+						lineType: "default",
 						style: { fontSize: "1em" },
 					}, // 曲线图
 					retweets: {
@@ -95,7 +95,7 @@ class Driver extends React.Component {
 					favourites: {
 						color: "#fe9a22",
 						text: "喜欢数",
-						lineType: "default",
+						lineType: "curve",
 						style: { fontSize: "80%" },
 					}, // 默认折线图
 					disableColor: "green",
@@ -147,6 +147,10 @@ class Driver extends React.Component {
 					fontFamily: "Arial",
 					type: "dashed", // default:实线 dashed: 虚线
 					timePrecision: "m s ms", // yy mm dd h m s ms
+					accuracy: {
+						fix: 0, // 保留小数位数
+						type: "round" // round:四舍五入 floor:保留最小数
+					},
 					style: {
 						opacity: 0.5,
 					},

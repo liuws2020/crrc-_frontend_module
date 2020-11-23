@@ -290,7 +290,7 @@ class sequenceLine extends React.Component {
 				.text(
 					`${
 						key && configPairs && configPairs[key] ? configPairs[key].text : ""
-					}: ${currValPair.value ? +currValPair.value.toFixed(2) : 0}`
+					}: ${currValPair.value ? +currValPair.value : 0}`
 				);
 		}
 	}
@@ -638,7 +638,6 @@ class sequenceLine extends React.Component {
 							})`
 						)
 						.attr("shape-rendering", shapeRendering)
-						.attr("stroke-linecap", "round")
 						.merge(line)
 						.transition()
 						.duration(duration ? duration : 0)
@@ -724,7 +723,7 @@ class sequenceLine extends React.Component {
 		const coordinate = this.point.matrixTransform(
 			this.svgDOM.getScreenCTM().inverse()
 		);
-		const { axis } = this.props;
+		const { axis, toolTips } = this.props;
 		let transAxisX = 0;
 		if (axis && axis.deltaXAxis) {
 			transAxisX = axis.deltaXAxis.x ? +axis.deltaXAxis.x : 0;
@@ -802,12 +801,32 @@ class sequenceLine extends React.Component {
 			transAxisY = axis.deltaYAxis.y ? +axis.deltaYAxis.y : 0;
 		}
 
+		let val = yDomain.invert(
+			coordinate.y - (this.props.height * 0.225 + transAxisY)
+		);
+
+		if (toolTips && toolTips.accuracy) {
+			if (toolTips.accuracy.type === "round") {
+				val = Math.round(val);
+			}
+
+			if (toolTips.accuracy.type === "floor") {
+				val = Math.floor(val);
+			}
+		}
+
+		if (toolTips && toolTips.accuracy) {
+			if (!isNaN(toolTips.accuracy.fix)) {
+				if (val.toFixed) {
+					val = val.toFixed(toolTips.accuracy.fix);
+				}
+			}
+		}
+
 		this.setState({
 			currValPair: {
 				key: currKey,
-				value: yDomain.invert(
-					coordinate.y - (this.props.height * 0.225 + transAxisY)
-				),
+				value: val,
 				date: dateStr,
 			},
 			coordinate,
