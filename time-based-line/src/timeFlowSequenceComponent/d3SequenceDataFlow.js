@@ -566,7 +566,7 @@ class sequenceLine extends React.Component {
 
 				switch (configPairs[key].lineType) {
 					case "curve":
-						model = D3.curveCardinal;
+						model = D3.curveCatmullRom.alpha(0.5);
 						break;
 					case "step":
 						model = D3.curveStep;
