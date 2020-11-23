@@ -2,6 +2,7 @@ import React from "react";
 import TimeSequenceLine, {
 	requestInterval,
 	cancelInterval,
+	clearScreen
 } from "./timeFlowSequenceComponent/d3SequenceDataFlow";
 class Driver extends React.Component {
 	state = {
@@ -48,12 +49,10 @@ class Driver extends React.Component {
 
 	componentDidMount() {
 		this.simulate();
-	/* 	setTimeout(() => {
-			this.setState({
-				width: window.innerWidth / 2,
-				height: window.innerHeight,
-			});
-		}, 7000); */
+		setTimeout(() => {
+			// 使用清屏效果，必须提供必要的键值, chart的唯一标识, 消散持续时间（非必须）
+			clearScreen(["tweets", "retweets", "favourites"], "demo", 1000)
+		}, 7000);
 	}
 
 	componentWillUnmount() {
@@ -67,8 +66,8 @@ class Driver extends React.Component {
 		// 必须先安装D3 5.16版本以上，jquery 3.51版本以上
 		return (
 			<TimeSequenceLine
-				// 图表ID 需要操作svg时候可用，非必须
-				// * chartID={"demo"}
+				// 图表ID 需要清屏svg时候可用，非必须
+				chartID={"demo"}
 				// 绑定state的数据达到实时更新效果
 				// 格式[{date:Date, key:value, ...}]
 				// 时序数据每个数组元素必须含有date对象以及相应的date键

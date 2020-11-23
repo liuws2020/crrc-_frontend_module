@@ -17,7 +17,7 @@ class sequenceLine extends React.Component {
 		}
 	}
 
-	cleanTootips = () => {
+	cleanToots = () => {
 		this.svgDOM = null;
 		const { chartID, configPairs } = this.props;
 		const colorPairCopy = Object.assign({}, configPairs);
@@ -216,7 +216,7 @@ class sequenceLine extends React.Component {
 
 		if (preProps.width !== width || preProps.height !== height) {
 			if (width && height) {
-				this.cleanTootips();
+				this.cleanToots();
 				this.constructTools();
 			}
 		}
@@ -868,6 +868,30 @@ sequenceLine.defaultProps = {
 };
 
 export default sequenceLine;
+
+export const clearScreen = function (attributes, chartID, fadeDuration) {
+	for (let key of attributes) {
+		const path = D3.select(`#${chartID}`).selectAll(`.${chartID}_${key}`);
+		$(path._groups[0][0]).fadeOut(
+			!isNaN(fadeDuration) ? Math.abs(fadeDuration) : 175
+		);
+
+		const circles = D3.select(`#${chartID}`).selectAll(
+			`.${key}_${chartID}_circle`
+		);
+		$(circles._groups[0][0]).fadeOut(
+			!isNaN(fadeDuration) ? Math.abs(fadeDuration) : 175
+		);
+
+		setTimeout(
+			function () {
+				path.remove();
+				circles.remove();
+			},
+			fadeDuration ? Math.abs(fadeDuration) + 25 : 200
+		);
+	}
+};
 
 export const requestInterval = function (fn, delay) {
 	const requestAnimeFrame = (function () {
