@@ -57,7 +57,7 @@ class Driver extends React.Component {
 
 	componentWillUnmount() {
 		if (this.loopID) {
-			cancelInterval(this.loopID.value);
+			cancelInterval(this.loopID.timeStamp);
 		}
 	}
 
