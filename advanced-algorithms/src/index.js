@@ -1,5 +1,5 @@
 import ReactDOM from "react-dom";
 import React from "react";
-import RealtimeSafeReques from "./realtimeSafeRequestTestDriver";
+import PhmArrayMapper from "./phmArrayMapperDriver";
 
-ReactDOM.render(<RealtimeSafeReques />, document.getElementById("root"));
+ReactDOM.render(<PhmArrayMapper />, document.getElementById("root"));
