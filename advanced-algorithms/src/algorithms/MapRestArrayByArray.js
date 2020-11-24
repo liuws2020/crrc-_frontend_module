@@ -55,21 +55,23 @@ export const mapRestArrayByArray = function (patch, maxBy) {
 		return null;
 	};
 
-	if (patch instanceof Object) {
+	const serialised = JSON.parse(JSON.stringify(patch));
+
+	if (serialised instanceof Object) {
 		/* {
             key_1:[...],
             key_2:[...],
             ...
            } */
-		const keys = Object.keys(patch);
+		let keys = Object.keys(serialised);
 		if (keys.length) {
 			keys.forEach((key) => {
-				patch[key] instanceof Array && getLen(patch[key], key);
+				serialised[key] instanceof Array && getLen(serialised[key], key);
 			});
 			const o = countMaxLen();
 			if (o && o.index) {
-				const longestAry = patch[o.index];
-				const copy = omit(patch, [o.index]);
+				const longestAry = serialised[o.index];
+				const copy = omit(serialised, [o.index]);
 				return merge(longestAry, copy);
 			}
 		}
