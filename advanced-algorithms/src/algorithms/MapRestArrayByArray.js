@@ -35,12 +35,14 @@ export const mapRestArrayByArray = function (patch, maxBy) {
 				let merged = {};
 				for (let key of restKeys) {
 					const restAryElem = rest[key];
-					for (let o of restAryElem) {
-						if (res[maxBy] === o[maxBy]) {
-							merged = {
-								...res,
-								...omit(o, [maxBy]),
-							};
+					if (restAryElem instanceof Array && restAryElem.length) {
+						for (let o of restAryElem) {
+							if (res[maxBy] === o[maxBy]) {
+								merged = {
+									...res,
+									...omit(o, [maxBy]),
+								};
+							}
 						}
 					}
 				}
@@ -64,10 +66,13 @@ export const mapRestArrayByArray = function (patch, maxBy) {
 			keys.forEach((key) => {
 				patch[key] instanceof Array && getLen(patch[key], key);
 			});
-			const { index } = countMaxLen();
-			const longestAry = patch[index];
-			const copy = omit(patch, [index]);
-			return merge(longestAry, copy);
+			const o = countMaxLen();
+			if (o.index) {
+				const longestAry = patch[o.index];
+				const copy = omit(patch, [o.index]);
+				return merge(longestAry, copy);
+			}
 		}
 	}
+	return null;
 };
