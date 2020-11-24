@@ -1,6 +1,7 @@
 import React from "react";
 import * as D3 from "d3";
 import $ from "jquery";
+import { minBy } from "lodash";
 
 class sequenceLine extends React.Component {
 	svg = null;
@@ -17,29 +18,37 @@ class sequenceLine extends React.Component {
 		}
 	}
 
-	cleanToots = () => {
+	cleanTootips = () => {
 		this.svgDOM = null;
 		const { chartID, configPairs } = this.props;
-		const colorPairCopy = Object.assign({}, configPairs);
-		configPairs.disableColor && delete colorPairCopy["disableColor"];
-		configPairs.labelCircleR && delete colorPairCopy["labelCircleR"];
-		configPairs.labelBaseHeight && delete colorPairCopy["labelBaseHeight"];
 
-		for (let key in colorPairCopy) {
-			this.svg.select(`.${key}_${chartID}_label`).remove();
-			this.svg.select(`.${key}_${chartID}_text`).remove();
-			this.svg.selectAll(`.${chartID}_${key}`).remove();
-			this.svg.selectAll(`.${key}_${chartID}_circle`).remove();
-		}
-		this.label = false;
-
-		this.svg.select(`.${chartID}_title_text`).remove();
+		this.removeLabel(configPairs, chartID);
+		this.removeTitle(chartID);
 		this.svg.select(`.${chartID}_cross_group`).remove();
 
 		this.xAxisDOM = null;
 		this.yAxisDOM = null;
 		this.svg.select(`#${chartID}_xAxisG`).remove();
 		this.svg.select(`#${chartID}_yAxisG`).remove();
+	};
+
+	constructTitle = (title, chartID, width, height) => {
+		const deltaX = isNaN(parseInt(title.deltaX)) ? +title.deltaX : 0;
+		const deltaY = isNaN(parseInt(title.deltaY)) ? +title.deltaY : 0;
+		const legendTitle = this.svg
+			.append("text")
+			.attr("class", `${chartID}_title_text`)
+			.attr("x", width * 0.05 + deltaX)
+			.attr("y", height * 0.1 + deltaY)
+			.attr("stroke", title ? title.stroke : "black")
+			.attr("fill", title ? title.fill : "black")
+			.text(title ? title.text : "")
+			.attr("alignment-baseline", title ? title.align : "middle");
+		$(legendTitle._groups[0][0]).css(title.style);
+	};
+
+	removeTitle = (chartID) => {
+		this.svg.select(`.${chartID}_title_text`).remove();
 	};
 
 	constructTools = () => {
@@ -56,21 +65,9 @@ class sequenceLine extends React.Component {
 		this.svgDOM.addEventListener("mouseover", this.onShapHover);
 		this.svgDOM.addEventListener("mouseleave", this.mouseLeaveShape);
 
-		const deltaX = title.deltaX ? +title.deltaX : 0;
-		const deltaY = title.deltaY ? +title.deltaY : 0;
-
 		if (width && height) {
-			const legendTitle = this.svg
-				.append("text")
-				.attr("class", `${chartID}_title_text`)
-				.attr("x", width * 0.05 + deltaX)
-				.attr("y", height * 0.1 + deltaY)
-				.attr("stroke", title ? title.stroke : "black")
-				.attr("fill", title ? title.fill : "black")
-				.text(title ? title.text : "")
-				.attr("alignment-baseline", title ? title.align : "middle");
-			$(legendTitle._groups[0][0]).css(title.style);
-
+			title instanceof Object &&
+				this.constructTitle(title, chartID, width, height);
 			this.crosshairFocus = this.svg
 				.append("g")
 				.attr("class", `${chartID}_cross_group`)
@@ -135,7 +132,9 @@ class sequenceLine extends React.Component {
 				this.timePrecision = toolTips.timePrecision.split(" ");
 			}
 
-			const labelBaseHeight = configPairs.labelBaseHeight;
+			const labelBaseHeight = isNaN(parseInt(configPairs.labelBaseHeight))
+				? +configPairs.labelBaseHeight
+				: 0;
 			this.appendLabel(width, height + labelBaseHeight);
 
 			this.point = this.svgDOM.createSVGPoint();
@@ -189,9 +188,20 @@ class sequenceLine extends React.Component {
 		},
 	};
 
+	dataAreEqual = (preData, data) => {
+		return data.every((d, i) => {
+			return JSON.stringify(d) === preData[i];
+		});
+	};
+
 	componentDidUpdate(preProps, preState) {
 		const { width, height, data } = this.props;
-		if (preProps.data !== data && data && data.length) {
+
+		if (
+			data instanceof Array &&
+			!this.dataAreEqual(preProps.data, data) &&
+			data.length
+		) {
 			const { x_scale, y_scale, x_domain, y_domain } = this.getScales(data);
 			this.xAxis(x_scale, width, height);
 			this.yAxis(y_scale, width, height);
@@ -216,7 +226,7 @@ class sequenceLine extends React.Component {
 
 		if (preProps.width !== width || preProps.height !== height) {
 			if (width && height) {
-				this.cleanToots();
+				this.cleanTootips();
 				this.constructTools();
 			}
 		}
@@ -231,7 +241,7 @@ class sequenceLine extends React.Component {
 			coordinate &&
 			this.props.toolTips
 		) {
-			const { toolTips, height, width, configPairs } = this.props;
+			const { toolTips, height, width, configPairs, axis } = this.props;
 			const { currValPair, coordinate } = this.state;
 			if (!this.isHover) {
 				this.crosshairFocus.style("display", "none");
@@ -242,9 +252,14 @@ class sequenceLine extends React.Component {
 
 			const stokeWidth = toolTips.lineWidth ? toolTips.lineWidth : 1;
 
+			const deltaY =
+				axis && axis.deltaXAxis && !isNaN(+axis.deltaXAxis.y)
+					? axis.deltaXAxis.y
+					: 0;
+
 			this.lineX
 				.attr("y1", height * 0.15)
-				.attr("y2", height - coordinate.y)
+				.attr("y2", height - coordinate.y + deltaY)
 				.attr("stroke", color)
 				.attr("stroke-width", stokeWidth)
 				.attr(
@@ -254,7 +269,13 @@ class sequenceLine extends React.Component {
 					})`
 				);
 
+			const deltaX =
+				axis && axis.deltaYAxis && !isNaN(+axis.deltaYAxis.x)
+					? +axis.deltaYAxis.x
+					: 0;
+
 			this.lineY
+				.attr("x1", width + deltaX)
 				.attr("x2", 2 * width - width * 0.05)
 				.attr("stroke", color)
 				.attr("stroke-width", stokeWidth)
@@ -290,8 +311,35 @@ class sequenceLine extends React.Component {
 				.text(
 					`${
 						key && configPairs && configPairs[key] ? configPairs[key].text : ""
-					}: ${currValPair.value ? +currValPair.value : 0}`
+					}: ${currValPair.value ? +currValPair.value.toFixed(2) : 0}`
 				);
+		}
+
+		const { title, chartID, configPairs } = this.props;
+		if (
+			JSON.stringify(title) !== JSON.stringify(preProps.title) &&
+			title instanceof Object
+		) {
+			this.removeTitle(chartID);
+			this.constructTitle(title, chartID, width, height);
+		}
+
+		if (
+			JSON.stringify(configPairs) !== JSON.stringify(preProps.configPairs) &&
+			configPairs instanceof Object
+		) {
+			this.removeLabel(configPairs, chartID);
+			const labelBaseHeight = isNaN(parseInt(configPairs.labelBaseHeight))
+				? +configPairs.labelBaseHeight
+				: 0;
+
+			this.appendLabel(width, height + labelBaseHeight);
+			if (data instanceof Array && data.length) {
+				const { x_scale, y_scale, x_domain, y_domain } = this.getScales(data);
+
+				const keys = this.getKeys(data[0]);
+				this.shaps(data, x_scale, y_scale, keys, x_domain, y_domain);
+			}
 		}
 	}
 
@@ -371,6 +419,19 @@ class sequenceLine extends React.Component {
 				.call(x_axis);
 			axisColor && g.selectAll(`.tick line`).attr("stroke", axisColor);
 			rotateX && this.rotateText(g, rotateX, undefined);
+		}
+	};
+
+	removeLabel = (configPairs, chartID) => {
+		let colorPairCopy = Object.assign({}, configPairs);
+		configPairs.disableColor && delete colorPairCopy["disableColor"];
+		configPairs.labelCircleR && delete colorPairCopy["labelCircleR"];
+		configPairs.labelBaseHeight && delete colorPairCopy["labelBaseHeight"];
+		for (let key in colorPairCopy) {
+			this.svg.select(`.${key}_${chartID}_label`).remove();
+			this.svg.select(`.${key}_${chartID}_text`).remove();
+			this.svg.selectAll(`.${chartID}_${key}`).remove();
+			this.svg.selectAll(`.${key}_${chartID}_circle`).remove();
 		}
 	};
 
@@ -566,7 +627,7 @@ class sequenceLine extends React.Component {
 
 				switch (configPairs[key].lineType) {
 					case "curve":
-						model = D3.curveCatmullRom.alpha(0.5);
+						model = D3.curveCardinal;
 						break;
 					case "step":
 						model = D3.curveStep;
@@ -638,6 +699,7 @@ class sequenceLine extends React.Component {
 							})`
 						)
 						.attr("shape-rendering", shapeRendering)
+						.attr("stroke-linecap", "round")
 						.merge(line)
 						.transition()
 						.duration(duration ? duration : 0)
@@ -716,6 +778,18 @@ class sequenceLine extends React.Component {
 		this.setState({ coordinate: null });
 	};
 
+	findMostClosedValue = (compared, arr, key) => {
+		const metafied = arr.map((element) => {
+			let o = { meta: Math.abs(compared - element) };
+			o[key] = element;
+			return o;
+		});
+
+		return minBy(metafied, function (o) {
+			return o.meta;
+		})[key];
+	};
+
 	onLineHover = (evt, key, xDomain, yDomain) => {
 		let currKey = null;
 		let dateStr = null;
@@ -729,14 +803,29 @@ class sequenceLine extends React.Component {
 			transAxisX = axis.deltaXAxis.x ? +axis.deltaXAxis.x : 0;
 		}
 
+		const predict = toolTips instanceof Object ? toolTips.predict : false;
+
 		if (!evt[0]) return;
 
 		for (let name in evt[0]) {
 			if (name === key) {
 				currKey = key;
-				const date = new Date(
+				let date = null;
+				const geoDate = new Date(
 					xDomain.invert(coordinate.x - (this.props.width * 0.05 + transAxisX))
 				);
+
+				if (predict) {
+					date = geoDate;
+				} else {
+					date = new Date(
+						this.findMostClosedValue(
+							geoDate.getTime(),
+							evt.map((element) => element.date),
+							"date"
+						)
+					);
+				}
 
 				const year = date.getFullYear();
 				const month = date.getMonth() + 1;
@@ -801,32 +890,22 @@ class sequenceLine extends React.Component {
 			transAxisY = axis.deltaYAxis.y ? +axis.deltaYAxis.y : 0;
 		}
 
-		let val = yDomain.invert(
+		const geoInvertedvalue = yDomain.invert(
 			coordinate.y - (this.props.height * 0.225 + transAxisY)
 		);
-
-		if (toolTips && toolTips.accuracy) {
-			if (toolTips.accuracy.type === "round") {
-				val = Math.round(val);
-			}
-
-			if (toolTips.accuracy.type === "floor") {
-				val = Math.floor(val);
-			}
-		}
-
-		if (toolTips && toolTips.accuracy) {
-			if (!isNaN(toolTips.accuracy.fix)) {
-				if (val.toFixed) {
-					val = val.toFixed(toolTips.accuracy.fix);
-				}
-			}
-		}
 
 		this.setState({
 			currValPair: {
 				key: currKey,
-				value: val,
+				value: predict
+					? geoInvertedvalue
+					: this.findMostClosedValue(
+							geoInvertedvalue,
+							evt.map((datum) => {
+								return datum[key];
+							}),
+							key
+					  ),
 				date: dateStr,
 			},
 			coordinate,
@@ -872,24 +951,25 @@ export default sequenceLine;
 export const clearScreen = function (attributes, chartID, fadeDuration) {
 	for (let key of attributes) {
 		const path = D3.select(`#${chartID}`).selectAll(`.${chartID}_${key}`);
-		$(path._groups[0][0]).fadeOut(
-			!isNaN(fadeDuration) ? Math.abs(fadeDuration) : 175
-		);
 
 		const circles = D3.select(`#${chartID}`).selectAll(
 			`.${key}_${chartID}_circle`
 		);
-		$(circles._groups[0][0]).fadeOut(
-			!isNaN(fadeDuration) ? Math.abs(fadeDuration) : 175
-		);
 
-		setTimeout(
-			function () {
-				path.remove();
-				circles.remove();
-			},
-			fadeDuration ? Math.abs(fadeDuration) + 25 : 200
-		);
+		if (isNaN(fadeDuration) || !fadeDuration) {
+			path.remove();
+			circles.remove();
+			return;
+		}
+
+		$(path._groups[0][0]).fadeOut(Math.abs(fadeDuration));
+
+		$(circles._groups[0][0]).fadeOut(Math.abs(fadeDuration));
+
+		setTimeout(function () {
+			path.remove();
+			circles.remove();
+		}, Math.abs(fadeDuration) + 25);
 	}
 };
 

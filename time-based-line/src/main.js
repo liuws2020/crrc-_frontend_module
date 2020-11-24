@@ -2,13 +2,36 @@ import React from "react";
 import TimeSequenceLine, {
 	requestInterval,
 	cancelInterval,
-	clearScreen
+	// clearScreen
 } from "./timeFlowSequenceComponent/d3SequenceDataFlow";
 class Driver extends React.Component {
 	state = {
 		width: window.innerWidth,
 		height: window.innerHeight / 2,
 		data: [],
+		configPairs: {
+			tweets: {
+				color: "#5eaec5",
+				text: "发推数",
+				lineType: "default",
+				style: { fontSize: "1em" },
+			}, // 曲线图
+			retweets: {
+				color: "#92c463",
+				text: "重发数",
+				lineType: "step",
+				style: { fontSize: "100%" },
+			}, // 直方图
+			favourites: {
+				color: "#fe9a22",
+				text: "喜欢数",
+				lineType: "curve",
+				style: { fontSize: "80%" },
+			}, // 默认折线图
+			disableColor: "green",
+			labelCircleR: 5,
+			labelBaseHeight: 20, // label基础高度
+		},
 	};
 
 	loopID = null;
@@ -49,10 +72,35 @@ class Driver extends React.Component {
 
 	componentDidMount() {
 		this.simulate();
-		setTimeout(() => {
+		/* setTimeout(() => {
 			// 使用清屏效果，必须提供必要的键值, chart的唯一标识, 消散持续时间（非必须）
-			clearScreen(["tweets", "retweets", "favourites"], "demo", 1000)
-		}, 7000);
+			// clearScreen(["tweets", "retweets", "favourites"], "demo", 1000)
+			this.setState({
+				configPairs: {
+					tweets: {
+						color: "#5eaec5",
+						text: "发推数----",
+						lineType: "default",
+						style: { fontSize: "1em" },
+					}, // 曲线图
+					retweets: {
+						color: "#92c463",
+						text: "重发数",
+						lineType: "step",
+						style: { fontSize: "100%" },
+					}, // 直方图
+					favourites: {
+						color: "#fe9a22",
+						text: "喜欢数",
+						lineType: "curve",
+						style: { fontSize: "80%" },
+					}, // 默认折线图
+					disableColor: "green",
+					labelCircleR: 5,
+					labelBaseHeight: 20, // label基础高度
+				},
+			});
+		}, 7000); */
 	}
 
 	componentWillUnmount() {
@@ -78,29 +126,7 @@ class Driver extends React.Component {
 				height={height} // 必须
 				// y轴显示数据的颜色，disableColor除外
 				// disableColor是不想显示该数据时图标颜色
-				configPairs={{
-					tweets: {
-						color: "#5eaec5",
-						text: "发推数",
-						lineType: "default",
-						style: { fontSize: "1em" },
-					}, // 曲线图
-					retweets: {
-						color: "#92c463",
-						text: "重发数",
-						lineType: "step",
-						style: { fontSize: "100%" },
-					}, // 直方图
-					favourites: {
-						color: "#fe9a22",
-						text: "喜欢数",
-						lineType: "curve",
-						style: { fontSize: "80%" },
-					}, // 默认折线图
-					disableColor: "green",
-					labelCircleR: 5,
-					labelBaseHeight: 20, // label基础高度
-				}} // 必须
+				configPairs={this.state.configPairs} // 必须
 				displayOption={{
 					line: { display: true, antiAliasing: 3, lineWidth: 2 }, // antiAliasing 0:不抗锯齿 1:性能优先 2:自动 3:品质优先
 					scatter: { display: true, r: 2 },
@@ -146,18 +172,19 @@ class Driver extends React.Component {
 					fontFamily: "Arial",
 					type: "dashed", // default:实线 dashed: 虚线
 					timePrecision: "m s ms", // yy mm dd h m s ms
+					predict: false,
 					accuracy: {
 						fix: 0, // 保留小数位数
-						type: "round" // round:四舍五入 floor:保留最小数
+						type: "round", // round:四舍五入 floor:保留最小数
 					},
 					style: {
 						opacity: 0.5,
 					},
 				}}
 				axis={{
-					deltaXAxis: { x: 100, y: 10 }, // x 轴偏移量		
+					deltaXAxis: { x: 100, y: 10 }, // x 轴偏移量
 					deltaYAxis: { x: 20, y: 60 }, // y 轴偏移量
-					xFontStyle: { fontSize: "100%" }, // x 轴字体css
+					xFontStyle: { fontSize: "60%" }, // x 轴字体css
 					yFontStyle: { fontWeight: "bold" }, // y 轴字体css
 				}}
 			/>
