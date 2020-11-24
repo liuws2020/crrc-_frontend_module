@@ -67,7 +67,7 @@ export const mapRestArrayByArray = function (patch, maxBy) {
 				patch[key] instanceof Array && getLen(patch[key], key);
 			});
 			const o = countMaxLen();
-			if (o.index) {
+			if (o && o.index) {
 				const longestAry = patch[o.index];
 				const copy = omit(patch, [o.index]);
 				return merge(longestAry, copy);
