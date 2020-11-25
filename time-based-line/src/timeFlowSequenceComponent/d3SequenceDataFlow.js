@@ -190,6 +190,7 @@ class sequenceLine extends React.Component {
 
 	dataAreEqual = (preData, data) => {
 		return data.every((d, i) => {
+			if (!preData && data) return false;
 			return JSON.stringify(d) === preData[i];
 		});
 	};
