@@ -127,3 +127,34 @@ export const mergeArrayByKey = function (patch, mapBy) {
 	}
 	return null;
 };
+
+export const fillAryWithDefault = function (keys, ary, defaultValue) {
+	const resultList = [];
+	if (keys instanceof Array && ary instanceof Array) {
+		ary.forEach((elem) => {
+			if (elem instanceof Object) {
+				const elemKeys = Object.keys(elem);
+				const excludedKeys = [];
+				let filled = {};
+
+				elemKeys.forEach((ek) => {
+					keys.forEach((k) => {
+						if (ek !== k) {
+							excludedKeys.push(k);
+						}
+					});
+				});
+
+				for (let name of excludedKeys) {
+					filled[name] = defaultValue;
+				}
+
+				resultList.push({
+					...filled,
+					...elem,
+				});
+			}
+		});
+	}
+	return resultList;
+};
