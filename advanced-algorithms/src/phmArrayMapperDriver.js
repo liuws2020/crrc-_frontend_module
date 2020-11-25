@@ -1,13 +1,24 @@
 import React from "react";
-import { mapRestArrayByArray } from "./algorithms/MapRestArrayByArray";
+import {
+	mapRestArrayByLongestArray, // 以最长素组为标准进行映射
+	mergeArrayByKey, // 根据某一键值进行映射
+} from "./algorithms/MapRestArrayByArray";
 import $ from "jquery";
 
 class Main extends React.Component {
 	componentDidMount() {
 		$.get("./data.txt").done((data) => {
-			const result = mapRestArrayByArray(JSON.parse(data), "key");
+			let parsed = JSON.parse(data);
+			parsed.PhaseWCurrentList = [
+				...parsed.PhaseWCurrentList,
+				...parsed.PhaseWCurrentList.map((elem) => {
+					return { date: elem.date, more: "test" };
+				}),
+			];
+			// console.log(parsed)
+			const result = mergeArrayByKey(parsed, "date");
 			console.log(result);
-		})
+		});
 	}
 
 	render() {
