@@ -33,8 +33,8 @@ class sequenceLine extends React.Component {
 	};
 
 	constructTitle = (title, chartID, width, height) => {
-		const deltaX = isNaN(parseInt(title.deltaX)) ? +title.deltaX : 0;
-		const deltaY = isNaN(parseInt(title.deltaY)) ? +title.deltaY : 0;
+		const deltaX = !isNaN(parseInt(title.deltaX)) ? +title.deltaX : 0;
+		const deltaY = !isNaN(parseInt(title.deltaY)) ? +title.deltaY : 0;
 		const legendTitle = this.svg
 			.append("text")
 			.attr("class", `${chartID}_title_text`)
@@ -132,7 +132,7 @@ class sequenceLine extends React.Component {
 				this.timePrecision = toolTips.timePrecision.split(" ");
 			}
 
-			const labelBaseHeight = isNaN(parseInt(configPairs.labelBaseHeight))
+			const labelBaseHeight = !isNaN(parseInt(configPairs.labelBaseHeight))
 				? +configPairs.labelBaseHeight
 				: 0;
 			this.appendLabel(width, height + labelBaseHeight);

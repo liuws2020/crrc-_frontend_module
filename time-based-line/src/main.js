@@ -30,7 +30,7 @@ class Driver extends React.Component {
 			}, // 默认折线图
 			disableColor: "green",
 			labelCircleR: 5,
-			labelBaseHeight: 20, // label基础高度
+			labelBaseHeight: 450, // label基础高度
 		},
 	};
 
@@ -138,7 +138,7 @@ class Driver extends React.Component {
 					stroke: "red", // 描边颜色
 					fill: "orange", // 填充色
 					deltaX: 10, // title横坐标位置增量
-					deltaY: 5, // title纵坐标位置增量
+					deltaY: 50, // title纵坐标位置增量
 					style: { fontSize: "120%", fontWeight: "bold" }, // 字体css
 				}} // 可选
 				// 动画持续时间，不想要动画传入0
@@ -182,7 +182,7 @@ class Driver extends React.Component {
 					},
 				}}
 				axis={{
-					deltaXAxis: { x: 100, y: 10 }, // x 轴偏移量
+					deltaXAxis: { x: 20, y: 10 }, // x 轴偏移量
 					deltaYAxis: { x: 20, y: 60 }, // y 轴偏移量
 					xFontStyle: { fontSize: "60%" }, // x 轴字体css
 					yFontStyle: { fontWeight: "bold" }, // y 轴字体css
