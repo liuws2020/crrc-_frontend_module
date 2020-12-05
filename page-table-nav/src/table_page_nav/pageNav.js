@@ -659,6 +659,7 @@ class PageNavTable extends React.Component {
 			striped,
 			controlAttr,
 			bodyPadding,
+			containerStyle,
 		} = this.props;
 		const headerStyle = tableStyle ? tableStyle.headerStyle : null;
 		const bodyStyle = tableStyle ? tableStyle.bodyStyle : null;
@@ -718,6 +719,7 @@ class PageNavTable extends React.Component {
 								paddingLeft,
 								boxShadow: "none",
 								border: "none",
+								...Object.assign({}, containerStyle)
 							}}>
 							<Ref innerRef={this.tableRef}>
 								<Table
@@ -770,6 +772,7 @@ class PageNavTable extends React.Component {
 									style={{
 										paddingTop: "1.25%",
 										zIndex: 10,
+										...Object.assign({}, controlAttr ? controlAttr.controlRowStyle : {})
 									}}>
 									<Grid.Column width={1}></Grid.Column>
 									{this.renderControls()}

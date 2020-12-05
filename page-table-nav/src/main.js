@@ -74,6 +74,7 @@ class Main extends React.Component {
 					height={window.innerHeight} // 组件高度
 					titleStyle={{ headerSize: "large", headerStyle: {} }}
 					bodyPadding={{ left: "1%", right: "1%" }}
+					containerStyle={{}} // 外部容器样式
 					titles={[
 						{
 							text: "故障代码",
@@ -124,6 +125,7 @@ class Main extends React.Component {
 					animationDuration={0.5} // 过渡动画持续时间
 					controlAttr={{
 						containerCss: { opacity: 0.8 }, // 控制组件容器css
+						controlRowStyle:{}, // 控制器当前行样式
 						styleBtn: {}, // 控制按钮css属性
 						styleInput: {}, // 控制输入栏css属性
 						buttonAttr: {
