@@ -65,6 +65,14 @@ class Main extends React.Component {
 		console.log("filted", key); // 当前排序数据键值
 	};
 
+	onRowHoverCallback = ({target}) => {
+
+	}
+
+	onRowLeaveCallback = ({target}) => {
+		
+	}
+
 	render() {
 		return (
 			<div>
@@ -142,6 +150,8 @@ class Main extends React.Component {
 					}}
 					// 控制翻页组件属性
 					rowClickCb={this.rowClickCallback} // 点击行回调
+					rowHoverCb={this.onRowHoverCallback}
+					rowLeaveCb={this.onRowLeaveCallback}
 					tableStyle={{
 						headerStyle: { backgroundColor:"green" },
 						bodyStyle: {},
