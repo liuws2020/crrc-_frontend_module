@@ -320,7 +320,7 @@ class PageNavTable extends React.Component {
 					const { text, type, align } = element[key];
 					return type ? (
 						<Table.Cell key={key} textAlign={align ? align : "left"}>
-							{text}
+							<span style={{ pointerEvents: "none" }}>{text}</span>
 						</Table.Cell>
 					) : null;
 				});
