@@ -256,13 +256,7 @@ class PageNavTable extends React.Component {
 	};
 
 	renderBodyElements = () => {
-		const {
-			height,
-			animationDuration,
-			rowClickCb,
-			rowHoverCb,
-			rowLeaveCb,
-		} = this.props;
+		const { height, animationDuration, rowClickCb } = this.props;
 		const rowsPerPage = this.state.pages;
 		const dataList = this.deleteOrderKeys(this.state.data);
 		if (!(dataList instanceof Array) || !height) return null;
@@ -320,7 +314,7 @@ class PageNavTable extends React.Component {
 					const { text, type, align } = element[key];
 					return type ? (
 						<Table.Cell key={key} textAlign={align ? align : "left"}>
-							<span style={{ pointerEvents: "none" }}>{text}</span>
+							{text}
 						</Table.Cell>
 					) : null;
 				});
@@ -328,8 +322,6 @@ class PageNavTable extends React.Component {
 					<Table.Row
 						key={index}
 						style={rowStyle}
-						onMouseEnter={rowHoverCb instanceof Function ? rowHoverCb : null}
-						onMouseLeave={rowLeaveCb instanceof Function ? rowLeaveCb : null}
 						onClick={() => {
 							this.onRowClick(element, rowClickCb);
 						}}>
@@ -597,13 +589,21 @@ class PageNavTable extends React.Component {
 						<Icon name='left chevron' />
 					</Button>
 				</Grid.Column>
-				<Grid.Column width={4} style={{ padding: 0 }}>
+				<Grid.Column
+					width={4}
+					style={{
+						padding: 0,
+						display: "flex",
+						alignItems: "center",
+						justifyContent: "center",
+					}}>
 					<Input
 						placeholder='页数'
 						fluid
 						value={this.state.pageNumber}
 						onChange={this.onPageNumberChange}
 						onClick={this.onPageNumClick}
+						style={{width: "100%",}}
 						ref={(node) => {
 							if (node && node.inputRef && node.inputRef.current) {
 								this.applyDOMcss(node.inputRef.current, {
@@ -667,7 +667,6 @@ class PageNavTable extends React.Component {
 			striped,
 			controlAttr,
 			bodyPadding,
-			containerStyle,
 		} = this.props;
 		const headerStyle = tableStyle ? tableStyle.headerStyle : null;
 		const bodyStyle = tableStyle ? tableStyle.bodyStyle : null;
@@ -727,7 +726,6 @@ class PageNavTable extends React.Component {
 								paddingLeft,
 								boxShadow: "none",
 								border: "none",
-								...Object.assign({}, containerStyle),
 							}}>
 							<Ref innerRef={this.tableRef}>
 								<Table
@@ -780,10 +778,6 @@ class PageNavTable extends React.Component {
 									style={{
 										paddingTop: "1.25%",
 										zIndex: 10,
-										...Object.assign(
-											{},
-											controlAttr ? controlAttr.controlRowStyle : {}
-										),
 									}}>
 									<Grid.Column width={1}></Grid.Column>
 									{this.renderControls()}
