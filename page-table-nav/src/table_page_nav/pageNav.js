@@ -106,7 +106,9 @@ class PageNavTable extends React.Component {
 										{text}
 									</Header>
 								</Grid.Column>
-								<Grid.Column width={4} style={{ paddingTop: "2%" }}>
+								<Grid.Column
+									width={4}
+									style={{ paddingLeft: 0, paddingTop: "2%" }}>
 									<Button.Group size='small' floated={"left"}>
 										{sortable ? (
 											<Popup
@@ -255,13 +257,37 @@ class PageNavTable extends React.Component {
 		});
 	};
 
+	filterByTitle = (dataList) => {
+		const keys = Object.keys(dataList[0]);
+		const titleNames = this.props.titles.map(({ key }) => {
+			return key;
+		});
+		const rmlist = [];
+		if (titleNames.length < keys.length) {
+			for (let key of keys) {
+				if (!titleNames.includes(key)) {
+					rmlist.push(key);
+				}
+			}
+		}
+		if (rmlist.length) {
+			dataList.forEach((d) => {
+				for (let rm of rmlist) {
+					delete d[rm];
+				}
+			});
+		}
+	};
+
 	renderBodyElements = () => {
 		const { height, animationDuration, rowClickCb } = this.props;
 		const rowsPerPage = this.state.pages;
 		const dataList = this.deleteOrderKeys(this.state.data);
+
 		if (!(dataList instanceof Array) || !height) return null;
 		if (!dataList.length) return null;
 
+		dataList instanceof Array && this.filterByTitle(dataList);
 		return [...dataList, ...this.state.restEmptyList]
 			.slice(
 				this.anchor,
@@ -314,7 +340,7 @@ class PageNavTable extends React.Component {
 					const { text, type, align } = element[key];
 					return type ? (
 						<Table.Cell key={key} textAlign={align ? align : "left"}>
-							{text}
+							<span style={{ pointerEvents: "none" }}>{text}</span>
 						</Table.Cell>
 					) : null;
 				});
@@ -367,11 +393,25 @@ class PageNavTable extends React.Component {
 		}
 	}
 
+	dataFirstIn = false;
 	componentDidUpdate(preProps, preState) {
 		const { dataList } = this.props;
 		const rowsPerPage = this.state.pages;
 		if (preProps.dataList !== dataList) {
 			if (dataList instanceof Array) {
+				if (!this.dataFirstIn && dataList.length < +rowsPerPage) {
+					const chunkedDataList = [];
+					for (let i = 0, len = +rowsPerPage - dataList.length; i < len; i++) {
+						let empty = {};
+						Object.keys(dataList[0]).forEach((key) => {
+							empty[key] = "";
+						});
+						chunkedDataList.push(empty);
+					}
+					this.setState({ restEmptyList: chunkedDataList });
+					this.dataFirstIn = true;
+				}
+
 				if (dataList.length > rowsPerPage) {
 					this.setState({ disableNext: false });
 					this.totalPage = Math.floor(dataList.length / rowsPerPage);
@@ -603,7 +643,7 @@ class PageNavTable extends React.Component {
 						value={this.state.pageNumber}
 						onChange={this.onPageNumberChange}
 						onClick={this.onPageNumClick}
-						style={{width: "100%",}}
+						style={{ width: "100%" }}
 						ref={(node) => {
 							if (node && node.inputRef && node.inputRef.current) {
 								this.applyDOMcss(node.inputRef.current, {
