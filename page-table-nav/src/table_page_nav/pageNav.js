@@ -280,7 +280,13 @@ class PageNavTable extends React.Component {
 	};
 
 	renderBodyElements = () => {
-		const { height, animationDuration, rowClickCb } = this.props;
+		const {
+			height,
+			animationDuration,
+			rowClickCb,
+			rowHoverCb,
+			rowLeaveCb,
+		} = this.props;
 		const rowsPerPage = this.state.pages;
 		const dataList = this.deleteOrderKeys(this.state.data);
 
@@ -348,6 +354,8 @@ class PageNavTable extends React.Component {
 					<Table.Row
 						key={index}
 						style={rowStyle}
+						onMouseEnter={rowHoverCb}
+						onMouseLeave={rowLeaveCb}
 						onClick={() => {
 							this.onRowClick(element, rowClickCb);
 						}}>
@@ -550,6 +558,11 @@ class PageNavTable extends React.Component {
 				controlAttr.inputCb.call(null, inputVal);
 			}
 			if (inputVal === this.state.pageNumber) return;
+
+			if(this.state.pageNumber === 1 && rowsPerPage > dataList.length) {
+				return;
+			}
+
 			if (inputVal <= this.totalPage + 1 && inputVal > 0 && !isNaN(inputVal)) {
 				const start = inputVal * rows - rows;
 				const list = [...dataList, ...this.state.restEmptyList];
