@@ -123,7 +123,6 @@ class PageNavTable extends React.Component {
 								<Grid.Column
 									width={2}
 									style={{
-										paddingLeft: 0,
 										paddingRight: 0,
 										paddingTop: "2%",
 										display: "flex",
