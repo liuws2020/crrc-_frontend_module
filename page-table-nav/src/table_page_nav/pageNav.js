@@ -53,6 +53,7 @@ class PageNavTable extends React.Component {
 
 			const popupStyle = popupCSS ? popupCSS.style : {};
 
+			const mouseLeaveDelay = popupCSS ? popupCSS.mouseLeaveDelay : 0;
 			const headerStyle =
 				popupCSS && popupCSS.headerStyle
 					? Object.assign({}, popupCSS.headerStyle)
@@ -77,6 +78,11 @@ class PageNavTable extends React.Component {
 				controlBtnAttr && controlBtnAttr.style
 			);
 
+			const groupStyle = Object.assign(
+				{},
+				controlBtnAttr && controlBtnAttr.groupStyle
+			);
+
 			const buttonColor =
 				controlBtnAttr && controlBtnAttr.color ? controlBtnAttr.color : null;
 
@@ -98,7 +104,15 @@ class PageNavTable extends React.Component {
 					{type === "text" && (sortable || filterable) ? (
 						<Grid>
 							<Grid.Row columns={2}>
-								<Grid.Column width={8} style={{ paddingTop: "2%" }}>
+								<Grid.Column
+									width={10}
+									style={{
+										paddingTop: "2%",
+										paddingRight: 0,
+										display: "flex",
+										justifyContent: "center",
+										alignItems: "center",
+									}}>
 									<Header
 										size={titleSize}
 										style={titleCSS}
@@ -107,9 +121,19 @@ class PageNavTable extends React.Component {
 									</Header>
 								</Grid.Column>
 								<Grid.Column
-									width={4}
-									style={{ paddingLeft: 0, paddingTop: "2%" }}>
-									<Button.Group size='small' floated={"left"}>
+									width={2}
+									style={{
+										paddingLeft: 0,
+										paddingRight: 0,
+										paddingTop: "2%",
+										display: "flex",
+										justifyContent: "center",
+										alignItems: "center",
+									}}>
+									<Button.Group
+										size='small'
+										floated={"left"}
+										style={groupStyle}>
 										{sortable ? (
 											<Popup
 												content={
@@ -117,9 +141,12 @@ class PageNavTable extends React.Component {
 														{sortText}
 													</Header>
 												}
+												mouseLeaveDelay={
+													isNaN(mouseLeaveDelay) ? 0 : mouseLeaveDelay
+												}
+												position={"top center"}
 												inverted={popupInverted}
 												on={"hover"}
-												position={"bottom center"}
 												style={popupStyle}
 												trigger={
 													<Button
@@ -193,7 +220,12 @@ class PageNavTable extends React.Component {
 					) : (
 						<Header
 							size={titleSize}
-							style={titleCSS}
+							style={{
+								...titleCSS,
+								display: "flex",
+								justifyContent: "center",
+								alignItems: "center",
+							}}
 							inverted={tableHeaderBC ? false : true}>
 							{text}
 						</Header>
@@ -445,7 +477,6 @@ class PageNavTable extends React.Component {
 			});
 		}
 	}
-
 	addOrderKeys = (dataList) => {
 		for (let d of dataList) {
 			const keys = Object.keys(d);
@@ -559,7 +590,7 @@ class PageNavTable extends React.Component {
 			}
 			if (inputVal === this.state.pageNumber) return;
 
-			if(this.state.pageNumber === 1 && rowsPerPage > dataList.length) {
+			if (this.state.pageNumber === 1 && rowsPerPage > dataList.length) {
 				return;
 			}
 
@@ -720,6 +751,7 @@ class PageNavTable extends React.Component {
 			striped,
 			controlAttr,
 			bodyPadding,
+			containerStyle,
 		} = this.props;
 		const headerStyle = tableStyle ? tableStyle.headerStyle : null;
 		const bodyStyle = tableStyle ? tableStyle.bodyStyle : null;
@@ -779,6 +811,7 @@ class PageNavTable extends React.Component {
 								paddingLeft,
 								boxShadow: "none",
 								border: "none",
+								...Object.assign({}, containerStyle),
 							}}>
 							<Ref innerRef={this.tableRef}>
 								<Table
