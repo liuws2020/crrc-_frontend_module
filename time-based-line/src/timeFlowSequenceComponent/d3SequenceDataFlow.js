@@ -16,6 +16,8 @@ class sequenceLine extends React.Component {
 			const keys = this.getKeys(data[0]);
 			this.shaps(data, x_scale, y_scale, keys, x_domain, y_domain);
 		}
+
+		this.idleable = "requestIdleCallback" in window;
 	}
 
 	cleanTootips = () => {
@@ -195,19 +197,30 @@ class sequenceLine extends React.Component {
 		});
 	};
 
+	updateData = (renderInfo) => {
+		const { data, width, height } = renderInfo;
+		const { x_scale, y_scale, x_domain, y_domain } = this.getScales(data);
+		this.xAxis(x_scale, width, height);
+		this.yAxis(y_scale, width, height);
+		const keys = this.getKeys(data[0]);
+		this.shaps(data, x_scale, y_scale, keys, x_domain, y_domain);
+	};
+
 	componentDidUpdate(preProps, preState) {
 		const { width, height, data } = this.props;
-
 		if (
 			data instanceof Array &&
 			!this.dataAreEqual(preProps.data, data) &&
 			data.length
 		) {
-			const { x_scale, y_scale, x_domain, y_domain } = this.getScales(data);
-			this.xAxis(x_scale, width, height);
-			this.yAxis(y_scale, width, height);
-			const keys = this.getKeys(data[0]);
-			this.shaps(data, x_scale, y_scale, keys, x_domain, y_domain);
+			if (this.idleable) {
+				window.requestIdleCallback((deadline) => {
+					if (deadline.timeRemaining() >= 1)
+						this.updateData({ data, width, height });
+				});
+			} else {
+				this.updateData({ data, width, height });
+			}
 		}
 
 		if (this.state.filter !== preState.filter && this.props.configPairs) {
