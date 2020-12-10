@@ -27,6 +27,7 @@ class Driver extends React.Component {
 				text: "喜欢数",
 				lineType: "curve",
 				style: { fontSize: "80%" },
+				disableOnMount: true
 			}, // 默认折线图
 			disableColor: "green",
 			labelCircleR: 5,

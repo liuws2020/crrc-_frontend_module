@@ -13,13 +13,37 @@ class sequenceLine extends React.Component {
 	componentDidMount() {
 		this.svg = D3.select(this.svgContextRef.current);
 		this.constructTools();
-		const { data } = this.props;
+		const { data, configPairs } = this.props;
+		this.setLabelInitState(configPairs);
 		if (data instanceof Array && data.length) {
+			this.filtered = data;
 			const { x_scale, y_scale, x_domain, y_domain } = this.getScales(data);
 			const keys = this.getKeys(data[0]);
 			this.shaps(data, x_scale, y_scale, keys, x_domain, y_domain);
 		}
 	}
+
+	setLabelInitState = (configPairs) => {
+		if (!(configPairs instanceof Object)) return;
+		let filter;
+		for (let key in configPairs) {
+			const o = configPairs[key];
+			if (o instanceof Object) {
+				if (o.disableOnMount) {
+					filter = {};
+					filter[key] = true;
+				}
+			}
+		}
+
+		if (filter) {
+			this.setState({ filter });
+			for(let f in filter) {
+				this.displayLines[f] = false;
+			}
+			
+		}
+	};
 
 	cleanTootips = () => {
 		this.svgDOM = null;
@@ -199,35 +223,48 @@ class sequenceLine extends React.Component {
 		this.shaps(data, x_scale, y_scale, keys, x_domain, y_domain);
 	};
 
+	filterData = (filternames, data) => {
+		return data.map((datum) => {
+			let d = { ...datum };
+			for (let name of filternames) {
+				delete d[name];
+			}
+			return d;
+		});
+	};
+
 	filtered;
+	dataFirstCome;
 	componentDidUpdate(preProps, preState) {
 		const { width, height, data, rangeY } = this.props;
 		const { filter } = this.state;
 
-		this.filtered = data;
-		const filternames = Object.keys(filter);
-		this.filtered =
-			filternames.length && !rangeY
-				? data.map((datum) => {
-						let d = { ...datum };
-						for (let name of filternames) {
-							delete d[name];
-						}
-						return d;
-				  })
-				: Object.assign([], data);
+		if (!this.dataFirstCome && data instanceof Array && data.length) {
+			this.filtered = data;
+			this.dataFirstCome = true;
+		}
 
 		if (
 			data instanceof Array &&
 			!this.dataAreEqual(preProps.data, data) &&
 			data.length
 		) {
+			const filternames = Object.keys(filter);
 			if (requestIdleCallback) {
 				requestIdleCallback((deadline) => {
-					if (deadline.timeRemaining() >= 1)
+					if (deadline.timeRemaining() >= 1) {
+						this.filtered =
+							filternames.length && !rangeY
+								? this.filterData(filternames, data)
+								: Object.assign([], data);
 						this.updateData({ data: this.filtered, width, height });
+					}
 				});
 			} else {
+				this.filtered =
+					filternames.length && !rangeY
+						? this.filterData(filternames, data)
+						: Object.assign([], data);
 				this.updateData({ data: this.filtered, width, height });
 			}
 		}
