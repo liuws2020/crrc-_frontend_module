@@ -148,7 +148,7 @@ class Driver extends React.Component {
 				// x轴刻度参考数
 				// * xTicks={5} // 可选
 				// y轴刻度参考数
-				yTicks={8} // 可选
+				// yTicks={8} // 可选
 				// x轴文字旋转角度
 				rotateX={30} // 可选
 				// * rangeY={[0, 50]} // y轴的值固定范围

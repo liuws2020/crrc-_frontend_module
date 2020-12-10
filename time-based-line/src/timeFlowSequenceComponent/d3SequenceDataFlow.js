@@ -54,16 +54,8 @@ class sequenceLine extends React.Component {
 		this.svg.select(`.${chartID}_title_text`).remove();
 	};
 
-	constructTools = () => {
-		const {
-			width,
-			height,
-			title,
-			toolTips,
-			data,
-			chartID,
-			configPairs,
-		} = this.props;
+	constructTools = (data) => {
+		const { width, height, title, toolTips, chartID, configPairs } = this.props;
 		this.svgDOM = this.svg._groups[0][0];
 		this.svgDOM.addEventListener("mouseover", this.onShapHover);
 		this.svgDOM.addEventListener("mouseleave", this.mouseLeaveShape);
@@ -207,8 +199,23 @@ class sequenceLine extends React.Component {
 		this.shaps(data, x_scale, y_scale, keys, x_domain, y_domain);
 	};
 
+	filtered;
 	componentDidUpdate(preProps, preState) {
 		const { width, height, data } = this.props;
+		const { filter } = this.state;
+		
+		this.filtered = data;
+		const filternames = Object.keys(filter);
+			this.filtered = filternames.length
+				? data.map((datum) => {
+						let d = { ...datum };
+						for (let name of filternames) {
+							delete d[name];
+						}
+						return d;
+				  })
+				: Object.assign([], data);
+
 		if (
 			data instanceof Array &&
 			!this.dataAreEqual(preProps.data, data) &&
@@ -217,10 +224,10 @@ class sequenceLine extends React.Component {
 			if (requestIdleCallback) {
 				requestIdleCallback((deadline) => {
 					if (deadline.timeRemaining() >= 1)
-						this.updateData({ data, width, height });
+						this.updateData({ data: this.filtered, width, height });
 				});
 			} else {
-				this.updateData({ data, width, height });
+				this.updateData({ data: this.filtered, width, height });
 			}
 		}
 
@@ -242,7 +249,7 @@ class sequenceLine extends React.Component {
 		if (preProps.width !== width || preProps.height !== height) {
 			if (width && height) {
 				this.cleanTootips();
-				this.constructTools();
+				this.constructTools(this.filtered);
 			}
 		}
 
@@ -350,10 +357,11 @@ class sequenceLine extends React.Component {
 
 			this.appendLabel(width, height + labelBaseHeight);
 			if (data instanceof Array && data.length) {
-				const { x_scale, y_scale, x_domain, y_domain } = this.getScales(data);
-
-				const keys = this.getKeys(data[0]);
-				this.shaps(data, x_scale, y_scale, keys, x_domain, y_domain);
+				const { x_scale, y_scale, x_domain, y_domain } = this.getScales(
+					this.filtered
+				);
+				const keys = this.getKeys(this.filtered[0]);
+				this.shaps(this.filtered, x_scale, y_scale, keys, x_domain, y_domain);
 			}
 		}
 	}
@@ -546,11 +554,14 @@ class sequenceLine extends React.Component {
 		}
 
 		const linePath = this.svg.select(`.${chartID}_${color}`)._groups[0][0];
-		const circlePath = this.svg.select(`.${color}_${chartID}_circle`)
-			._groups[0][0];
+		const circlePath = this.svg.selectAll(`.${color}_${chartID}_circle`);
+		const circlePathDOM = circlePath ? circlePath._groups[0] : null;
 		if (this.displayLines[color] || this.displayLines[color] === undefined) {
 			linePath && $(linePath).fadeOut(200);
-			circlePath && $(circlePath).fadeOut(200);
+			circlePathDOM && $(circlePathDOM).fadeOut(200);
+			setTimeout(() => {
+				circlePath.remove();
+			}, 200);
 			this.displayLines[color] = false;
 		} else {
 			linePath && $(linePath).fadeIn(200);
@@ -800,9 +811,14 @@ class sequenceLine extends React.Component {
 			return o;
 		});
 
-		return minBy(metafied, function (o) {
+		const min = minBy(metafied, function (o) {
 			return o.meta;
-		})[key];
+		});
+
+		if (!min) {
+			return;
+		}
+		return min[key];
 	};
 
 	onLineHover = (evt, key, xDomain, yDomain) => {
