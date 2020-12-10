@@ -3,6 +3,9 @@ import * as D3 from "d3";
 import $ from "jquery";
 import { minBy } from "lodash";
 
+const requestIdleCallback =
+	"requestIdleCallback" in window ? window.requestIdleCallback : undefined;
+
 class sequenceLine extends React.Component {
 	svg = null;
 	crosshairFocus = null;
@@ -16,8 +19,6 @@ class sequenceLine extends React.Component {
 			const keys = this.getKeys(data[0]);
 			this.shaps(data, x_scale, y_scale, keys, x_domain, y_domain);
 		}
-
-		this.idleable = "requestIdleCallback" in window;
 	}
 
 	cleanTootips = () => {
@@ -213,8 +214,8 @@ class sequenceLine extends React.Component {
 			!this.dataAreEqual(preProps.data, data) &&
 			data.length
 		) {
-			if (this.idleable) {
-				window.requestIdleCallback((deadline) => {
+			if (requestIdleCallback) {
+				requestIdleCallback((deadline) => {
 					if (deadline.timeRemaining() >= 1)
 						this.updateData({ data, width, height });
 				});
@@ -987,24 +988,26 @@ export const clearScreen = function (attributes, chartID, fadeDuration) {
 	}
 };
 
+const animatable = "requestAnimationFrame" in window;
+
+const polifillRequestAnimation = function (callback) {
+	const timeStamp = window.setTimeout(callback, 1000 / 60);
+	return timeStamp;
+};
+
+const requestAnimeFrame = animatable
+	? window.requestAnimationFrame
+	: polifillRequestAnimation;
+
 export const requestInterval = function (fn, delay) {
-	const requestAnimeFrame = (function () {
-		return (
-			window.requestAnimationFrame ||
-			function (callback) {
-				window.setTimeout(callback, 1000 / 60);
-			}
-		);
-	})();
 	let start = new Date().getTime();
 	let handle = {};
 	function loop() {
 		handle.timeStamp = requestAnimeFrame(loop);
-		const current = new Date().getTime(),
-			delta = current - start;
-		if (delta >= delay) {
+		const current = new Date().getTime();
+		if (current - start >= delay) {
 			fn.call();
-			start = new Date().getTime();
+			start = current;
 		}
 	}
 	handle.timeStamp = requestAnimeFrame(loop);
@@ -1012,5 +1015,7 @@ export const requestInterval = function (fn, delay) {
 };
 
 export const cancelInterval = function (timeStamp) {
-	window.cancelAnimationFrame(timeStamp);
+	animatable
+		? window.cancelAnimationFrame(timeStamp)
+		: window.clearTimeout(timeStamp);
 };
