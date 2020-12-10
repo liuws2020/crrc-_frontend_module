@@ -201,12 +201,13 @@ class sequenceLine extends React.Component {
 
 	filtered;
 	componentDidUpdate(preProps, preState) {
-		const { width, height, data } = this.props;
+		const { width, height, data, rangeY } = this.props;
 		const { filter } = this.state;
-		
+
 		this.filtered = data;
 		const filternames = Object.keys(filter);
-			this.filtered = filternames.length
+		this.filtered =
+			filternames.length && !rangeY
 				? data.map((datum) => {
 						let d = { ...datum };
 						for (let name of filternames) {
