@@ -1,14 +1,20 @@
 import React from "react";
 import * as D3 from "d3";
 import $ from "jquery";
-import { minBy } from "lodash";
+import { minBy, defer } from "lodash";
 
 const requestIdleCallback =
 	"requestIdleCallback" in window ? window.requestIdleCallback : undefined;
 
-class sequenceLine extends React.Component {
+class SequenceLine extends React.Component {
 	svg = null;
 	crosshairFocus = null;
+
+	constructor(props) {
+		super(props);
+		const length = +props.maxDatalength;
+		this.maxDatalength = !isNaN(length) ? length : 10000;
+	}
 
 	componentDidMount() {
 		this.svg = D3.select(this.svgContextRef.current);
@@ -16,7 +22,7 @@ class sequenceLine extends React.Component {
 		const { data, configPairs } = this.props;
 		this.setLabelInitState(configPairs);
 		if (data instanceof Array && data.length) {
-			this.filtered = data;
+			this.filtered = data.slice(0, this.maxDatalength);
 			const { x_scale, y_scale, x_domain, y_domain } = this.getScales(data);
 			const keys = this.getKeys(data[0]);
 			this.shaps(data, x_scale, y_scale, keys, x_domain, y_domain);
@@ -38,10 +44,9 @@ class sequenceLine extends React.Component {
 
 		if (filter) {
 			this.setState({ filter });
-			for(let f in filter) {
+			for (let f in filter) {
 				this.displayLines[f] = false;
 			}
-			
 		}
 	};
 
@@ -233,10 +238,16 @@ class sequenceLine extends React.Component {
 		});
 	};
 
+	sliceData = (data, filternames, rangeY) => {
+		return filternames.length && !rangeY
+			? this.filterData(filternames, data).slice(0, this.maxDatalength)
+			: Object.assign([], data.slice(0, this.maxDatalength));
+	};
+
 	filtered;
 	dataFirstCome;
 	componentDidUpdate(preProps, preState) {
-		const { width, height, data, rangeY } = this.props;
+		const { width, height, data, rangeY, processTimeRemaining } = this.props;
 		const { filter } = this.state;
 
 		if (!this.dataFirstCome && data instanceof Array && data.length) {
@@ -249,22 +260,23 @@ class sequenceLine extends React.Component {
 			!this.dataAreEqual(preProps.data, data) &&
 			data.length
 		) {
+			const timeRemaining = !isNaN(processTimeRemaining)
+				? +processTimeRemaining
+				: 1;
 			const filternames = Object.keys(filter);
 			if (requestIdleCallback) {
 				requestIdleCallback((deadline) => {
-					if (deadline.timeRemaining() >= 1) {
-						this.filtered =
-							filternames.length && !rangeY
-								? this.filterData(filternames, data)
-								: Object.assign([], data);
-						this.updateData({ data: this.filtered, width, height });
+					if (deadline.timeRemaining() >= timeRemaining) {
+						this.filtered = this.sliceData(data, filternames, rangeY);
+						this.updateData({
+							data: this.filtered,
+							width,
+							height,
+						});
 					}
 				});
 			} else {
-				this.filtered =
-					filternames.length && !rangeY
-						? this.filterData(filternames, data)
-						: Object.assign([], data);
+				this.filtered = this.sliceData(data, filternames, rangeY);
 				this.updateData({ data: this.filtered, width, height });
 			}
 		}
@@ -1011,11 +1023,91 @@ class sequenceLine extends React.Component {
 	}
 }
 
-sequenceLine.defaultProps = {
+SequenceLine.defaultProps = {
 	chartID: "default_svg_id",
 };
 
-export default sequenceLine;
+class SequenceWrapper extends React.Component {
+	constructor(props) {
+		super(props);
+		this.state = {
+			debouncedData: [],
+		};
+	}
+
+	deferData = (data) => {
+		return defer(
+			() => {
+				this.setState({ debouncedData: Object.assign([], data) });
+			}
+		);
+	};
+
+	componentDidMount() {
+		this.setState({ debouncedData: this.props.data });
+	}
+
+	componentDidUpdate(preProps) {
+		const { data } = this.props;
+		if (preProps.data !== data) {
+			this.deferData(data);
+		}
+	}
+
+	render() {
+		const {
+			chartID,
+			width,
+			height,
+			configPairs,
+			displayOption,
+			title,
+			duration,
+			axisColor,
+			xTicks,
+			yTicks,
+			rotateX,
+			rangeY,
+			rotateY,
+			dateStrFormatter,
+			style,
+			backgroundColor,
+			labelTextFill,
+			toolTips,
+			axis,
+			maxDatalength,
+			processTimeRemaining,
+		} = this.props;
+		return (
+			<SequenceLine
+				chartID={chartID}
+				data={this.state.debouncedData}
+				width={width}
+				height={height}
+				configPairs={configPairs}
+				displayOption={displayOption}
+				title={title}
+				duration={duration}
+				axisColor={axisColor}
+				xTicks={xTicks}
+				yTicks={yTicks}
+				rotateX={rotateX}
+				rangeY={rangeY}
+				rotateY={rotateY}
+				dateStrFormatter={dateStrFormatter}
+				style={style}
+				backgroundColor={backgroundColor}
+				labelTextFill={labelTextFill}
+				toolTips={toolTips}
+				axis={axis}
+				maxDatalength={maxDatalength}
+				processTimeRemaining={processTimeRemaining}
+			/>
+		);
+	}
+}
+
+export default SequenceWrapper;
 
 export const clearScreen = function (attributes, chartID, fadeDuration) {
 	for (let key of attributes) {

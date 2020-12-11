@@ -39,7 +39,7 @@ class Driver extends React.Component {
 
 	randomDataIniter = () => {
 		const data = [];
-		for (let i = 0; i < 10; i++) {
+		for (let i = 0; i < 5000; i++) {
 			data.push({
 				date: new Date() - Math.random() * 1000,
 				tweets: Math.random() * 10,
@@ -68,7 +68,7 @@ class Driver extends React.Component {
 
 	simulate = () => {
 		this.randomDataIniter();
-		this.loopID = requestInterval(this.randomDataGenerator, 3500);
+		this.loopID = requestInterval(this.randomDataGenerator, 10);
 	};
 
 	componentDidMount() {
@@ -143,7 +143,7 @@ class Driver extends React.Component {
 					style: { fontSize: "120%", fontWeight: "bold" }, // 字体css
 				}} // 可选
 				// 动画持续时间，不想要动画传入0
-				duration={3000} // 可选
+				duration={10} // 可选
 				// 坐标轴颜色
 				axisColor='red' // 可选
 				// x轴刻度参考数
@@ -188,6 +188,8 @@ class Driver extends React.Component {
 					xFontStyle: { fontSize: "60%" }, // x 轴字体css
 					yFontStyle: { fontWeight: "bold" }, // y 轴字体css
 				}}
+				maxDatalength={5000}
+				processTimeRemaining={5}
 			/>
 		);
 	}
