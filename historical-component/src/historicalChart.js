@@ -32,43 +32,16 @@ class HistoricalComponent extends React.Component {
 			preProps.seriesDataUpdate !== seriesDataUpdate ||
 			preProps.dates !== dates
 		) {
-			const TypeException = function () {
-				this.name = "TypeException";
-				this.message = "type error";
-			};
 			if (seriesDataUpdate instanceof Array && dates instanceof Array) {
-				try {
-					const option = this.historicalCharts.getOption();
-					option.xAxis = [{ data: dates }];
-					const preSeries = option.series;
-
-					let series = seriesDataUpdate.map(({ name, type, data }) => {
-						if (!name || !(data instanceof Array)) {
-							throw new TypeException();
+				if (window.requestIdleCallback) {
+					window.requestIdleCallback((deadline) => {
+						if (deadline.timeRemaining() >= 1) {
+							this.updateSeries(dates, seriesDataUpdate);
 						}
-
-						preSeries.splice(
-							preSeries.indexOf(preSeries.find((s) => s.name === name)),
-							1
-						);
-
-						return {
-							name: `${name}`,
-							type,
-							data,
-						};
 					});
-					
-					preSeries.forEach((s) => {
-						s.data = null;
-					});
-
-					series = [...series, ...preSeries];
-
-					option.series = series;
-					this.historicalCharts.clear();
-					this.historicalCharts.setOption(option);
-				} catch (error) {}
+				} else {
+					this.updateSeries(dates, seriesDataUpdate);
+				}
 			}
 		}
 
@@ -96,6 +69,46 @@ class HistoricalComponent extends React.Component {
 			this.historicalCharts.setOption({ dataZoom });
 		}
 	}
+
+	updateSeries = (dates, seriesDataUpdate) => {
+		const TypeException = function () {
+			this.name = "TypeException";
+			this.message = "type error";
+		};
+		try {
+			const option = this.historicalCharts.getOption();
+			option.xAxis = [{ data: dates }];
+			const preSeries = option.series;
+
+			let series = seriesDataUpdate.map(({ name, type, data, rest }) => {
+				if (!name || !(data instanceof Array)) {
+					throw new TypeException();
+				}
+
+				preSeries.splice(
+					preSeries.indexOf(preSeries.find((s) => s.name === name)),
+					1
+				);
+
+				return {
+					name: `${name}`,
+					type,
+					data,
+					...Object.assign({}, rest),
+				};
+			});
+
+			preSeries.forEach((s) => {
+				s.data = null;
+			});
+
+			series = [...series, ...preSeries];
+
+			option.series = series;
+			this.historicalCharts.clear();
+			this.historicalCharts.setOption(option);
+		} catch (error) {}
+	};
 
 	initPropsToOption = () => {
 		try {

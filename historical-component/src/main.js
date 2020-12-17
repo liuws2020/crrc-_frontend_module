@@ -103,7 +103,17 @@ export default class Main extends React.Component {
 			this.setState({
 				dates: dataX.slice(0, length / 2),
 				seriesDataUpdate: [
-					{ name: "流量", type: "line", data: dataY1.slice(0, length / 2) },
+					{
+						name: "流量",
+						type: "line",
+						data: dataY1.slice(0, length / 2),
+						rest: {
+							areaStyle: {},
+							emphasis: {
+								focus: "series",
+							},
+						},
+					},
 					/* { name: "降雨量", data: dataY2.slice(0, length / 2) }, */
 				],
 				legend: {
@@ -120,6 +130,12 @@ export default class Main extends React.Component {
 							name: "降雨量",
 							type: "line",
 							data: dataY2.slice(length / 2, length),
+							rest: {
+								areaStyle: {},
+								emphasis: {
+									focus: "series",
+								},
+							},
 						},
 					],
 					legend: {
