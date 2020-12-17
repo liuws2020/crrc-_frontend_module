@@ -66,10 +66,9 @@ export default class Main extends React.Component {
 				max: 500,
 			},
 			series: [
-				{
+				/* {
 					name: "流量",
 					type: "line",
-					areaStyle: {},
 					lineStyle: {
 						width: 1,
 					},
@@ -81,7 +80,6 @@ export default class Main extends React.Component {
 				{
 					name: "降雨量",
 					type: "line",
-					areaStyle: {},
 					lineStyle: {
 						width: 1,
 					},
@@ -89,7 +87,7 @@ export default class Main extends React.Component {
 						focus: "series",
 					},
 					data: [],
-				},
+				}, */
 			],
 			restOptions: {}, // echarts其他属性
 			seriesDataUpdate: [], // Y轴的各个数据序列
@@ -101,13 +99,35 @@ export default class Main extends React.Component {
 		$.getJSON("./resources/data.json").done((data) => {
 			const { dataX, dataY1, dataY2 } = data;
 			// 更新数据：Y轴数据需要提供name，以及对应的数据数组
+			const length = dataX.length;
 			this.setState({
-				dates: dataX,
+				dates: dataX.slice(0, length / 2),
 				seriesDataUpdate: [
-					{ name: "流量",  data: dataY1 },
-					{ name: "降雨量",  data: dataY2 },
+					{ name: "流量", type: "line", data: dataY1.slice(0, length / 2) },
+					/* { name: "降雨量", data: dataY2.slice(0, length / 2) }, */
 				],
+				legend: {
+					data: ["流量"],
+					left: 0,
+				},
 			});
+			setTimeout(() => {
+				this.setState({
+					dates: dataX.slice(length / 2, length),
+					seriesDataUpdate: [
+						/* { name: "流量", data: dataY1.slice(length / 2, length) }, */
+						{
+							name: "降雨量",
+							type: "line",
+							data: dataY2.slice(length / 2, length),
+						},
+					],
+					legend: {
+						data: ["降雨量"],
+						left: 0,
+					},
+				});
+			}, 3000);
 		});
 	}
 

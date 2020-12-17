@@ -32,30 +32,42 @@ class HistoricalComponent extends React.Component {
 			preProps.seriesDataUpdate !== seriesDataUpdate ||
 			preProps.dates !== dates
 		) {
-            const TypeException = function() {
-                this.name = "TypeException";
-                this.message = "type error";
-            }
+			const TypeException = function () {
+				this.name = "TypeException";
+				this.message = "type error";
+			};
 			if (seriesDataUpdate instanceof Array && dates instanceof Array) {
 				try {
-					const series = seriesDataUpdate.map(({ name, type, data }) => {
-                        if(!name || !(data instanceof Array)) {
-                            throw new TypeException();
-                        }
+					const option = this.historicalCharts.getOption();
+					option.xAxis = [{ data: dates }];
+					const preSeries = option.series;
+
+					let series = seriesDataUpdate.map(({ name, type, data }) => {
+						if (!name || !(data instanceof Array)) {
+							throw new TypeException();
+						}
+
+						preSeries.splice(
+							preSeries.indexOf(preSeries.find((s) => s.name === name)),
+							1
+						);
+
 						return {
-							name:`${name}`,
+							name: `${name}`,
 							type,
 							data,
 						};
 					});
-					this.historicalCharts.setOption({
-						xAxis: [
-							{
-								data: dates,
-							},
-						],
-						series,
+					
+					preSeries.forEach((s) => {
+						s.data = null;
 					});
+
+					series = [...series, ...preSeries];
+
+					option.series = series;
+					this.historicalCharts.clear();
+					this.historicalCharts.setOption(option);
 				} catch (error) {}
 			}
 		}
@@ -111,12 +123,12 @@ class HistoricalComponent extends React.Component {
 				series,
 			};
 
-			if(restOptions instanceof Object) {
-				for(let attr in restOptions) {
+			if (restOptions instanceof Object) {
+				for (let attr in restOptions) {
 					option[attr] = restOptions[attr];
 				}
 			}
-			
+
 			return option;
 		} catch (error) {
 			return null;
@@ -226,4 +238,4 @@ HistoricalComponent.defaultProps = {
 	restOptions: {},
 };
 
-export default HistoricalComponent
+export default HistoricalComponent;
