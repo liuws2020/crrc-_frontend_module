@@ -129,7 +129,7 @@ class Driver extends React.Component {
 				// disableColor是不想显示该数据时图标颜色
 				configPairs={this.state.configPairs} // 必须
 				displayOption={{
-					line: { display: true, antiAliasing: 3, lineWidth: 2 }, // antiAliasing 0:不抗锯齿 1:性能优先 2:自动 3:品质优先
+					line: { display: false, antiAliasing: 3, lineWidth: 2 }, // antiAliasing 0:不抗锯齿 1:性能优先 2:自动 3:品质优先
 					scatter: { display: true, r: 2 },
 				}}
 				// 图表主题

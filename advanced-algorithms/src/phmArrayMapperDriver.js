@@ -2,8 +2,8 @@ import React from "react";
 import {
 	// mapRestArrayByLongestArray, // 以最长素组为标准进行映射
 	mergeArrayByKey, // 根据某一键值进行映射
-	fillAryWithMomo,
-	fillAryWithDefault
+	fillAryWithMemo,
+	/* fillAryWithDefault */
 } from "./algorithms/MapRestArrayByArray";
 import $ from "jquery";
 
@@ -19,7 +19,7 @@ class Main extends React.Component {
 			];
 			const result = mergeArrayByKey(parsed, "date");
 			console.log(
-				fillAryWithMomo(
+				fillAryWithMemo(
 					[
 						"date",
 						"Channel2",

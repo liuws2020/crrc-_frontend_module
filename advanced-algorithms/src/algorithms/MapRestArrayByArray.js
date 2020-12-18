@@ -159,7 +159,7 @@ export const fillAryWithDefault = function (keys, ary, defaultValue) {
 	return resultList;
 };
 
-export const fillAryWithMomo = function (keys, ary, excepts) {
+export const fillAryWithMemo = function (keys, ary, excepts) {
 	const resultList = [];
 	let cacheKeys = null;
 	let cacheMapper = {};
@@ -265,5 +265,6 @@ export const fillAryWithMomo = function (keys, ary, excepts) {
 			}
 		}
 	}
-	return resultList
+	return resultList;
 };
+
