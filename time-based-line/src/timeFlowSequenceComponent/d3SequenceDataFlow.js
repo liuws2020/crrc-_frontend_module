@@ -738,7 +738,11 @@ class SequenceLine extends React.Component {
 					transAxisY = axis.deltaYAxis.y ? +axis.deltaYAxis.y : 0;
 				}
 
-				if (displayOption && displayOption.line && displayOption.line.display) {
+				if (
+					displayOption &&
+					displayOption.line &&
+					!configPairs[key].disableLine
+				) {
 					const lineWidth = +displayOption.line.lineWidth;
 					const AntiAliasing = +displayOption.line.antiAliasing;
 
@@ -792,7 +796,7 @@ class SequenceLine extends React.Component {
 				if (
 					displayOption &&
 					displayOption.scatter &&
-					displayOption.scatter.display
+					!configPairs[key].disableScatter
 				) {
 					const circle = this.svg
 						.selectAll(`.${key}_${chartID}_circle`)
@@ -807,20 +811,8 @@ class SequenceLine extends React.Component {
 								height * 0.225 + transAxisY
 							})`
 						)
-						.attr("cx", ({ date }) => {
-							if (date instanceof Date) {
-								return xScale(date);
-							}
-							return 0;
-						})
-						.attr("cy", (d) => {
-							if (!isNaN(d[key])) {
-								return yScale(d[key]);
-							}
-							return 0;
-						})
-						.transition()
-						.duration(duration ? duration : 0)
+						.attr("cx", ({ date }) => xScale(date))
+						.attr("cy", (d) => yScale(d[key]))
 						.attr("r", displayOption.scatter.r ? displayOption.scatter.r : 0)
 						.style("fill", color);
 
@@ -829,6 +821,7 @@ class SequenceLine extends React.Component {
 						.duration(duration ? duration : 0)
 						.attr("cx", ({ date }) => xScale(date))
 						.attr("cy", (d) => yScale(d[key]))
+
 						.style("fill", color);
 					circle.exit().selectAll(`.${key}_${chartID}_circle`).remove();
 				}

@@ -14,6 +14,8 @@ class Driver extends React.Component {
 				color: "#5eaec5",
 				text: "发推数",
 				lineType: "default",
+				disableLine: true,
+				disableScatter: false,
 				style: { fontSize: "1em" },
 			}, // 曲线图
 			retweets: {
@@ -27,7 +29,7 @@ class Driver extends React.Component {
 				text: "喜欢数",
 				lineType: "curve",
 				style: { fontSize: "80%" },
-				disableOnMount: true
+				disableOnMount: false,
 			}, // 默认折线图
 			disableColor: "green",
 			labelCircleR: 5,
@@ -68,7 +70,7 @@ class Driver extends React.Component {
 
 	simulate = () => {
 		this.randomDataIniter();
-		this.loopID = requestInterval(this.randomDataGenerator, 1000);
+		this.loopID = requestInterval(this.randomDataGenerator, 3000);
 	};
 
 	componentDidMount() {
@@ -129,8 +131,8 @@ class Driver extends React.Component {
 				// disableColor是不想显示该数据时图标颜色
 				configPairs={this.state.configPairs} // 必须
 				displayOption={{
-					line: { display: false, antiAliasing: 3, lineWidth: 2 }, // antiAliasing 0:不抗锯齿 1:性能优先 2:自动 3:品质优先
-					scatter: { display: true, r: 2 },
+					line: { antiAliasing: 3, lineWidth: 2 }, // antiAliasing 0:不抗锯齿 1:性能优先 2:自动 3:品质优先
+					scatter: { r: 2 },
 				}}
 				// 图表主题
 				title={{
@@ -143,7 +145,7 @@ class Driver extends React.Component {
 					style: { fontSize: "120%", fontWeight: "bold" }, // 字体css
 				}} // 可选
 				// 动画持续时间，不想要动画传入0
-				duration={1000} // 可选
+				duration={3000} // 可选
 				// 坐标轴颜色
 				axisColor='red' // 可选
 				// x轴刻度参考数
