@@ -165,7 +165,7 @@ class HistoricalComponent extends React.Component {
 	};
 
 	render() {
-		const { containerStyle, fontFamily } = this.props;
+		const { containerStyle } = this.props;
 		return (
 			<div
 				style={{
