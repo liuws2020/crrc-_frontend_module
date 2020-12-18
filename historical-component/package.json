@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "echarts": "^4.9.0",
+    "echarts": "^4.8.0",
     "jquery": "^3.5.1",
     "lodash": "^4.17.15",
     "react": "^16.13.1",

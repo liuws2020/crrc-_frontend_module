@@ -2,7 +2,8 @@ import React from "react";
 import {
 	// mapRestArrayByLongestArray, // 以最长素组为标准进行映射
 	mergeArrayByKey, // 根据某一键值进行映射
-	fillAryWithDefault,
+	fillAryWithMomo,
+	fillAryWithDefault
 } from "./algorithms/MapRestArrayByArray";
 import $ from "jquery";
 
@@ -13,12 +14,12 @@ class Main extends React.Component {
 			parsed.PhaseWCurrentList = [
 				...parsed.PhaseWCurrentList,
 				...parsed.PhaseWCurrentList.map((elem) => {
-					return { date: elem.date, more: "test" };
+					return { date: elem.date };
 				}),
 			];
 			const result = mergeArrayByKey(parsed, "date");
 			console.log(
-				fillAryWithDefault(
+				fillAryWithMomo(
 					[
 						"date",
 						"Channel2",
@@ -40,7 +41,7 @@ class Main extends React.Component {
 						"Channel44",
 					],
 					result,
-					0
+					["date"]
 				)
 			);
 		});

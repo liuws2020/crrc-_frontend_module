@@ -8,21 +8,14 @@ export default class Main extends React.Component {
 		this.state = {
 			title: {
 				text: "雨量流量关系图",
-				subtext: "数据来自西安兰特水电测控技术有限公司",
-				left: "center",
 				align: "right",
+				textStyle: {
+					fontFamily: "Times New Roman",
+				},
+				left: 150,
 			},
 			grid: {
 				bottom: 80,
-			},
-			toolbox: {
-				feature: {
-					dataZoom: {
-						yAxisIndex: "none",
-					},
-					restore: {},
-					saveAsImage: {},
-				},
 			},
 			tooltip: {
 				trigger: "axis",
@@ -97,16 +90,15 @@ export default class Main extends React.Component {
 
 	componentDidMount() {
 		$.getJSON("./resources/data.json").done((data) => {
-			const { dataX, dataY1, dataY2 } = data;
+			const { dataX, dataY1, dataY2, dataY3 } = data;
 			// 更新数据：Y轴数据需要提供name，以及对应的数据数组
-			const length = dataX.length;
 			this.setState({
-				dates: dataX.slice(0, length / 2),
+				dates: dataX,
 				seriesDataUpdate: [
 					{
 						name: "流量",
 						type: "line",
-						data: dataY1.slice(0, length / 2),
+						data: dataY1,
 						rest: {
 							areaStyle: {},
 							emphasis: {
@@ -114,22 +106,49 @@ export default class Main extends React.Component {
 							},
 						},
 					},
-					/* { name: "降雨量", data: dataY2.slice(0, length / 2) }, */
+					{
+						name: "降雨量",
+						type: "line",
+						data: dataY2,
+						rest: {
+							areaStyle: {},
+							emphasis: {
+								focus: "series",
+							},
+						},
+					},
 				],
 				legend: {
 					data: ["流量"],
-					left: 0,
+					textStyle: {
+						fontFamily: "Times New Roman",
+					},
+				},
+				title: {
+					textStyle: {
+						fontFamily: "Times New Roman",
+					},
 				},
 			});
 			setTimeout(() => {
 				this.setState({
-					dates: dataX.slice(length / 2, length),
+					dates: dataX,
 					seriesDataUpdate: [
-						/* { name: "流量", data: dataY1.slice(length / 2, length) }, */
 						{
 							name: "降雨量",
 							type: "line",
-							data: dataY2.slice(length / 2, length),
+							data: dataY2,
+							rest: {
+								areaStyle: {},
+								emphasis: {
+									focus: "series",
+								},
+							},
+						},
+						{
+							name: "其他",
+							type: "line",
+							data: dataY3,
 							rest: {
 								areaStyle: {},
 								emphasis: {
@@ -139,9 +158,16 @@ export default class Main extends React.Component {
 						},
 					],
 					legend: {
-						data: ["降雨量"],
-						left: 0,
+						data: ["降雨量", "其他"],
+						textStyle: {
+							fontFamily: "Microsoft YaHei",
+						},
 					},
+					/* title: {
+						textStyle: {
+							fontFamily: "Microsoft YaHei",
+						},
+					}, */
 				});
 			}, 3000);
 		});

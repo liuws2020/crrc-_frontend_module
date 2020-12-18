@@ -1,4 +1,4 @@
-import { omit, max, clone, merge } from "lodash";
+import { omit, max, clone, merge, uniq } from "lodash";
 
 export const mapRestArrayByLongestArray = function (patch, maxBy) {
 	const lengthAry = [];
@@ -145,7 +145,7 @@ export const fillAryWithDefault = function (keys, ary, defaultValue) {
 					});
 				});
 
-				for (let name of excludedKeys) {
+				for (let name of uniq(excludedKeys)) {
 					filled[name] = defaultValue;
 				}
 
@@ -157,4 +157,113 @@ export const fillAryWithDefault = function (keys, ary, defaultValue) {
 		});
 	}
 	return resultList;
+};
+
+export const fillAryWithMomo = function (keys, ary, excepts) {
+	const resultList = [];
+	let cacheKeys = null;
+	let cacheMapper = {};
+	if (keys instanceof Array && ary instanceof Array) {
+		ary.forEach((elem) => {
+			if (elem instanceof Object) {
+				const elemKeys = Object.keys(elem);
+				const excludedKeys = [];
+				let filled = {};
+
+				elemKeys.forEach((ek) => {
+					keys.forEach((k) => {
+						if (ek !== k) {
+							excludedKeys.push(k);
+						}
+					});
+				});
+
+				for (let name of uniq(excludedKeys)) {
+					filled[name] = undefined;
+				}
+
+				const res = {
+					...filled,
+					...elem,
+				};
+
+				resultList.push(res);
+			}
+		});
+
+		if (resultList.length) {
+			cacheKeys = Object.keys(resultList[0]);
+			if (excepts instanceof Array) {
+				if (excepts.length) {
+					excepts.forEach((delkey) => {
+						const del = cacheKeys.find((key) => key === delkey);
+						if (del) {
+							cacheKeys.splice(cacheKeys.indexOf(del), 1);
+						}
+					});
+				}
+			}
+			if (cacheKeys.length) {
+				for (let key of cacheKeys) {
+					cacheMapper[key] = [];
+				}
+				for (let i = 0, len = resultList.length; i < len; i++) {
+					const result = { ...resultList[i] };
+					if (excepts instanceof Array) {
+						if (excepts.length) {
+							excepts.forEach((delkey) => {
+								delete result[delkey];
+							});
+						}
+					}
+					for (let attrname in result) {
+						const attr = result[attrname];
+						if (cacheMapper[attrname].length) {
+							const map = [...cacheMapper[attrname]]
+								.reverse()
+								.find(({ from }) => {
+									return from < i;
+								});
+
+							if (map && map.value !== attr && attr) {
+								cacheMapper[attrname].push({
+									key: attrname,
+									from: i,
+									value: attr,
+								});
+							}
+						} else {
+							cacheMapper[attrname].push({
+								key: attrname,
+								from: i,
+								value: attr ? attr : 0,
+							});
+						}
+					}
+				}
+
+				for (let mapkey in cacheMapper) {
+					const mapQueue = cacheMapper[mapkey];
+					if (mapQueue.length) {
+						mapQueue.forEach(({ key, from, value }, index) => {
+							const next = mapQueue[index + 1];
+							let range;
+							if (next) {
+								range = next.from;
+							} else {
+								range = resultList.length;
+							}
+
+							for (let i = from; i < range; i++) {
+								if (typeof resultList[i][key] === "undefined") {
+									resultList[i][key] = value;
+								}
+							}
+						});
+					}
+				}
+			}
+		}
+	}
+	return resultList
 };

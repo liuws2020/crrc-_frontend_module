@@ -17,6 +17,30 @@ class HistoricalComponent extends React.Component {
 		option && this.historicalCharts.setOption(option);
 	}
 
+	idleUpdateData = (fn, args) => {
+		if (window.requestIdleCallback) {
+			window.requestIdleCallback((deadline) => {
+				if (deadline.timeRemaining() >= 1) {
+					fn.apply(this, args);
+				}
+			});
+		} else {
+			fn.apply(this, args);
+		}
+	};
+
+	idleUpdateOption = (option) => {
+		if (window.requestIdleCallback) {
+			window.requestIdleCallback((deadline) => {
+				if (deadline.timeRemaining() >= 1) {
+					this.historicalCharts.setOption(option);
+				}
+			});
+		} else {
+			this.historicalCharts.setOption(option);
+		}
+	};
+
 	componentDidUpdate(preProps) {
 		const {
 			seriesDataUpdate,
@@ -33,15 +57,7 @@ class HistoricalComponent extends React.Component {
 			preProps.dates !== dates
 		) {
 			if (seriesDataUpdate instanceof Array && dates instanceof Array) {
-				if (window.requestIdleCallback) {
-					window.requestIdleCallback((deadline) => {
-						if (deadline.timeRemaining() >= 1) {
-							this.updateSeries(dates, seriesDataUpdate);
-						}
-					});
-				} else {
-					this.updateSeries(dates, seriesDataUpdate);
-				}
+				this.idleUpdateData(this.updateSeries, [dates, seriesDataUpdate]);
 			}
 		}
 
@@ -149,7 +165,7 @@ class HistoricalComponent extends React.Component {
 	};
 
 	render() {
-		const { containerStyle } = this.props;
+		const { containerStyle, fontFamily } = this.props;
 		return (
 			<div
 				style={{
@@ -177,23 +193,8 @@ HistoricalComponent.defaultProps = {
 	},
 	seriesDataUpdate: [],
 	dates: [],
-	title: {
-		text: "标题",
-		subtext: "副标题",
-		left: "center",
-		align: "right",
-	},
 	grid: {
 		bottom: 50,
-	},
-	toolbox: {
-		feature: {
-			dataZoom: {
-				yAxisIndex: "none",
-			},
-			restore: {},
-			saveAsImage: {},
-		},
 	},
 	tooltip: {
 		trigger: "axis",

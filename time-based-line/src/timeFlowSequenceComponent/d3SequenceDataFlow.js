@@ -1036,11 +1036,9 @@ class SequenceWrapper extends React.Component {
 	}
 
 	deferData = (data) => {
-		return defer(
-			() => {
-				this.setState({ debouncedData: Object.assign([], data) });
-			}
-		);
+		return defer((data) => {
+			this.setState({ debouncedData: Object.assign([], data) });
+		}, data);
 	};
 
 	componentDidMount() {
