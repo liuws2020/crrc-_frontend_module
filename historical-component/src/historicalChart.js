@@ -6,6 +6,7 @@ class HistoricalComponent extends React.Component {
 		super(props);
 		this.echartsContainerRef = React.createRef();
 		this.historicalCharts = null;
+		this.currTime = 0;
 	}
 
 	componentDidMount() {
@@ -18,9 +19,30 @@ class HistoricalComponent extends React.Component {
 	}
 
 	onDataZoomChange = (args) => {
-		const cb = this.props.onDatazoom;
-		if(typeof cb === "function") {
-			cb.call(null, args);
+		const { onDatazoom, debounceDatazoomDuration } = this.props;
+		if (!debounceDatazoomDuration) {
+			if (typeof onDatazoom === "function") {
+				onDatazoom.call(null, args);
+			}
+		} else {
+			if (!this.currTime) {
+				this.currTime = new Date().getTime();
+				if (typeof onDatazoom === "function") {
+					onDatazoom.call(null, args);
+				}
+			} else {
+				const ts = new Date().getTime();
+				const period = ts - this.currTime;
+				if (typeof debounceDatazoomDuration === "number") {
+					if (
+						typeof onDatazoom === "function" &&
+						period >= debounceDatazoomDuration
+					) {
+						this.currTime = ts;
+						onDatazoom.call(null, args);
+					}
+				}
+			}
 		}
 	};
 

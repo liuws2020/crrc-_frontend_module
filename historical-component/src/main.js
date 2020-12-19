@@ -211,6 +211,7 @@ export default class Main extends React.Component {
 				dates={dates}
 				restOptions={restOptions}
 				onDatazoom={this.onDatazoom}
+				debounceDatazoomDuration={1000}
 			/>
 		);
 	}
