@@ -10,12 +10,19 @@ class HistoricalComponent extends React.Component {
 
 	componentDidMount() {
 		this.historicalCharts = Echarts.init(this.echartsContainerRef.current);
-
+		this.historicalCharts.on("datazoom", this.onDataZoomChange);
 		window.onresize = this.historicalCharts.resize;
 
 		const option = this.initPropsToOption();
 		option && this.historicalCharts.setOption(option);
 	}
+
+	onDataZoomChange = (args) => {
+		const cb = this.props.onDatazoom;
+		if(typeof cb === "function") {
+			cb.call(null, args);
+		}
+	};
 
 	idleUpdateData = (fn, args) => {
 		if (window.requestIdleCallback) {

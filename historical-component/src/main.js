@@ -173,6 +173,10 @@ export default class Main extends React.Component {
 		});
 	}
 
+	onDatazoom = (args) => {
+		console.log(args);
+	};
+
 	render() {
 		const {
 			title,
@@ -206,6 +210,7 @@ export default class Main extends React.Component {
 				seriesDataUpdate={seriesDataUpdate}
 				dates={dates}
 				restOptions={restOptions}
+				onDatazoom={this.onDatazoom}
 			/>
 		);
 	}
