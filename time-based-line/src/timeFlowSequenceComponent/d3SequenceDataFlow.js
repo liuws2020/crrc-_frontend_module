@@ -1,7 +1,7 @@
 import React from "react";
 import * as D3 from "d3";
 import $ from "jquery";
-import { minBy, defer } from "lodash";
+import { minBy, values, sum } from "lodash";
 
 const requestIdleCallback =
 	"requestIdleCallback" in window ? window.requestIdleCallback : undefined;
@@ -25,7 +25,7 @@ class SequenceLine extends React.Component {
 			this.filtered = data.slice(0, this.maxDatalength);
 			const { x_scale, y_scale, x_domain, y_domain } = this.getScales(data);
 			const keys = this.getKeys(data[0]);
-			this.shaps(data, x_scale, y_scale, keys, x_domain, y_domain);
+			keys && this.shaps(data, x_scale, y_scale, keys, x_domain, y_domain);
 		}
 	}
 
@@ -168,7 +168,7 @@ class SequenceLine extends React.Component {
 				this.xAxis(x_scale, width, height);
 				this.yAxis(y_scale, width, height);
 				const keys = this.getKeys(data[0]);
-				this.shaps(data, x_scale, y_scale, keys, x_domain, y_domain);
+				keys && this.shaps(data, x_scale, y_scale, keys, x_domain, y_domain);
 			}
 		}
 	};
@@ -213,10 +213,19 @@ class SequenceLine extends React.Component {
 	};
 
 	dataAreEqual = (preData, data) => {
-		return data.every((d, i) => {
-			if (!preData && data) return false;
-			return JSON.stringify(d) === preData[i];
-		});
+		if (preData.length !== data.length) {
+			return false;
+		} else {
+			let preSum = 0;
+			let currSum = 0;
+			preData.forEach((d) => {
+				preSum += sum(values(d));
+			});
+			data.forEach((d) => {
+				currSum += sum(values(d));
+			});
+			return preSum === currSum;
+		}
 	};
 
 	updateData = (renderInfo) => {
@@ -225,7 +234,7 @@ class SequenceLine extends React.Component {
 		this.xAxis(x_scale, width, height);
 		this.yAxis(y_scale, width, height);
 		const keys = this.getKeys(data[0]);
-		this.shaps(data, x_scale, y_scale, keys, x_domain, y_domain);
+		keys && this.shaps(data, x_scale, y_scale, keys, x_domain, y_domain);
 	};
 
 	filterData = (filternames, data) => {
@@ -411,13 +420,16 @@ class SequenceLine extends React.Component {
 					this.filtered
 				);
 				const keys = this.getKeys(this.filtered[0]);
-				this.shaps(this.filtered, x_scale, y_scale, keys, x_domain, y_domain);
+				keys &&
+					this.shaps(this.filtered, x_scale, y_scale, keys, x_domain, y_domain);
 			}
 		}
 	}
 
 	getKeys = (d) => {
-		return Object.keys(d).filter((key) => key !== "date");
+		if (typeof d === "object") {
+			return Object.keys(d).filter((key) => key !== "date");
+		}
 	};
 
 	measureClientBounds = (DOM, edge_1, edge_2) => {
@@ -1024,24 +1036,47 @@ class SequenceWrapper extends React.Component {
 	constructor(props) {
 		super(props);
 		this.state = {
-			debouncedData: [],
+			data: [],
 		};
+		this.currTime = 0;
 	}
 
-	deferData = (data) => {
-		return defer((data) => {
-			this.setState({ debouncedData: Object.assign([], data) });
-		}, data);
+	debounceData = (data, debounce) => {
+		if (!this.currTime) {
+			this.currTime = new Date().getTime();
+			this.setState({ data });
+		} else {
+			const ts = new Date().getTime();
+			const period = ts - this.currTime;
+			if (period >= debounce) {
+				this.currTime = ts;
+				this.setState({ data });
+			}
+		}
 	};
 
 	componentDidMount() {
-		this.setState({ debouncedData: this.props.data });
+		this.setState({ data: this.props.data });
 	}
 
 	componentDidUpdate(preProps) {
-		const { data } = this.props;
+		const { data, debounceTime, duration } = this.props;
 		if (preProps.data !== data) {
-			this.deferData(data);
+			const debounce = Math.abs(parseInt(debounceTime));
+
+			if (!isNaN(debounce)) {
+				if (!isNaN(+duration)) {
+					if (Math.abs(duration) > debounce) {
+						this.debounceData(data, duration);
+					} else {
+						this.debounceData(data, debounce);
+					}
+				} else {
+					this.debounceData(data, debounce);
+				}
+			} else {
+				this.setState({ data });
+			}
 		}
 	}
 
@@ -1072,7 +1107,7 @@ class SequenceWrapper extends React.Component {
 		return (
 			<SequenceLine
 				chartID={chartID}
-				data={this.state.debouncedData}
+				data={this.state.data}
 				width={width}
 				height={height}
 				configPairs={configPairs}
