@@ -50,11 +50,11 @@ class HistoricalComponent extends React.Component {
 		if (window.requestIdleCallback) {
 			window.requestIdleCallback((deadline) => {
 				if (deadline.timeRemaining() >= 1) {
-					fn.apply(this, args);
+					fn.apply(null, args);
 				}
 			});
 		} else {
-			fn.apply(this, args);
+			fn.apply(null, args);
 		}
 	};
 
@@ -80,6 +80,7 @@ class HistoricalComponent extends React.Component {
 			tooltip,
 			legend,
 			dataZoom,
+			restOptions,
 		} = this.props;
 		if (
 			preProps.seriesDataUpdate !== seriesDataUpdate ||
@@ -91,27 +92,54 @@ class HistoricalComponent extends React.Component {
 		}
 
 		if (preProps.title !== title && title instanceof Object) {
-			this.historicalCharts.setOption({ title });
+			const option = this.historicalCharts.getOption();
+			option.title = Object.assign({}, title);
+			this.historicalCharts.setOption(option);
 		}
 
 		if (preProps.grid !== grid && grid instanceof Object) {
-			this.historicalCharts.setOption({ grid });
+			const option = this.historicalCharts.getOption();
+			option.grid = Object.assign({}, grid);
+			this.historicalCharts.setOption(option);
 		}
 
 		if (preProps.toolbox !== toolbox && toolbox instanceof Object) {
-			this.historicalCharts.setOption({ toolbox });
+			const option = this.historicalCharts.getOption();
+			option.toolbox = Object.assign({}, toolbox);
+			this.historicalCharts.setOption(option);
 		}
 
 		if (preProps.tooltip !== tooltip && tooltip instanceof Object) {
-			this.historicalCharts.setOption({ tooltip });
+			const option = this.historicalCharts.getOption();
+			option.tooltip = Object.assign({}, tooltip);
+			this.historicalCharts.setOption(option);
 		}
 
 		if (preProps.legend !== legend && legend instanceof Object) {
-			this.historicalCharts.setOption({ legend });
+			const option = this.historicalCharts.getOption();
+			option.legend = Object.assign({}, legend);
+			this.historicalCharts.setOption(option);
 		}
 
 		if (preProps.dataZoom !== dataZoom && dataZoom instanceof Object) {
-			this.historicalCharts.setOption({ dataZoom });
+			const option = this.historicalCharts.getOption();
+			option.dataZoom = Object.assign({}, dataZoom);
+			this.historicalCharts.setOption(option);
+		}
+
+		if (preProps.restOptions !== restOptions && restOptions instanceof Object) {
+			const option = this.historicalCharts.getOption();
+			for (let opt in restOptions) {
+				const attr = restOptions[opt];
+				if (typeof attr === "object") {
+					option[opt] = { ...attr };
+				} else if (typeof attr === "array") {
+					option[opt] = [...attr];
+				} else {
+					option[opt] = attr;
+				}
+			}
+			this.historicalCharts.setOption(option);
 		}
 	}
 
