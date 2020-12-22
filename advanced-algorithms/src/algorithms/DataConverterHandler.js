@@ -268,3 +268,44 @@ export const fillAryWithMemo = function (keys, ary, excepts) {
 	return resultList;
 };
 
+export const separateArrayOutofObject = (combined) => {
+	if (!(combined instanceof Array)) {
+		return;
+	}
+
+	if (!combined.length) {
+		return;
+	}
+
+	if (combined.some((d) => typeof d !== "object")) {
+		return;
+	}
+
+	let combinedCopy = Object.assign([], combined);
+
+	const keys = Object.keys(combined[0]);
+	let converted = {};
+	keys.forEach((key) => {
+		converted[key] = [];
+	});
+
+	console.log();
+
+	for (let name in converted) {
+		let selectedKey;
+		combinedCopy.forEach((element) => {
+			const keys = Object.keys(element);
+			selectedKey = keys.find((key) => key === name);
+			if (selectedKey) {
+				converted[selectedKey].push(element[selectedKey]);
+			}
+		});
+		if (selectedKey) {
+			combinedCopy = combinedCopy.map((element) => {
+				return omit(element, [selectedKey]);
+			});
+		}
+	}
+
+	return converted;
+};
