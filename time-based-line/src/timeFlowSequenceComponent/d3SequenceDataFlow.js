@@ -1,7 +1,7 @@
 import React from "react";
 import * as D3 from "d3";
 import $ from "jquery";
-import { minBy, values, sum } from "lodash";
+import { minBy, values } from "lodash";
 
 const requestIdleCallback =
 	"requestIdleCallback" in window ? window.requestIdleCallback : undefined;
@@ -216,15 +216,15 @@ class SequenceLine extends React.Component {
 		if (preData.length !== data.length) {
 			return false;
 		} else {
-			let preSum = 0;
-			let currSum = 0;
+			let prestr = "";
+			let currStr = "";
 			preData.forEach((d) => {
-				preSum += sum(values(d));
+				prestr += values(d).join("");
 			});
 			data.forEach((d) => {
-				currSum += sum(values(d));
+				currStr += values(d).join("");
 			});
-			return preSum === currSum;
+			return prestr === currStr;
 		}
 	};
 

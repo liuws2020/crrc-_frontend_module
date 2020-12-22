@@ -1,7 +1,7 @@
 import React from "react";
 import TimeSequenceLine, {
-	requestInterval,
-	cancelInterval,
+	//requestInterval,
+	//cancelInterval,
 	// clearScreen
 } from "./timeFlowSequenceComponent/d3SequenceDataFlow";
 class Driver extends React.Component {
@@ -70,7 +70,7 @@ class Driver extends React.Component {
 
 	simulate = () => {
 		this.randomDataIniter();
-		this.loopID = requestInterval(this.randomDataGenerator, 1000);
+		this.loopID = setInterval(this.randomDataGenerator, 1000);
 	};
 
 	componentDidMount() {
@@ -108,7 +108,7 @@ class Driver extends React.Component {
 
 	componentWillUnmount() {
 		if (this.loopID) {
-			cancelInterval(this.loopID.timeStamp);
+			clearInterval(this.loopID);
 		}
 	}
 
