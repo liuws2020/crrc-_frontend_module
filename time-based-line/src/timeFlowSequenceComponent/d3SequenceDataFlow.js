@@ -212,22 +212,6 @@ class SequenceLine extends React.Component {
 		},
 	};
 
-	dataAreEqual = (preData, data) => {
-		if (preData.length !== data.length) {
-			return false;
-		} else {
-			let prestr = "";
-			let currStr = "";
-			preData.forEach((d) => {
-				prestr += values(d).join("");
-			});
-			data.forEach((d) => {
-				currStr += values(d).join("");
-			});
-			return prestr === currStr;
-		}
-	};
-
 	updateData = (renderInfo) => {
 		const { data, width, height } = renderInfo;
 		const { x_scale, y_scale, x_domain, y_domain } = this.getScales(data);
@@ -263,10 +247,10 @@ class SequenceLine extends React.Component {
 			this.filtered = data;
 			this.dataFirstCome = true;
 		}
-
+	
 		if (
 			data instanceof Array &&
-			!this.dataAreEqual(preProps.data, data) &&
+			preProps.data !== data &&
 			data.length
 		) {
 			const timeRemaining = !isNaN(processTimeRemaining)
@@ -794,6 +778,7 @@ class SequenceLine extends React.Component {
 						.attr("stroke-linecap", "round")
 						.merge(line)
 						.transition()
+						.ease(D3.easeLinear)
 						.duration(duration ? duration : 0)
 						.attr("d", curve(data))
 						.attr(
@@ -1059,11 +1044,10 @@ class SequenceWrapper extends React.Component {
 		this.setState({ data: this.props.data });
 	}
 
-	componentDidUpdate(preProps) {
+	componentDidUpdate(preProps, preState) {
 		const { data, debounceTime, duration } = this.props;
-		if (preProps.data !== data) {
+		if (preState.data !== data) {
 			const debounce = Math.abs(parseInt(debounceTime));
-
 			if (!isNaN(debounce)) {
 				if (!isNaN(+duration)) {
 					if (Math.abs(duration) > debounce) {

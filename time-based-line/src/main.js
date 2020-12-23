@@ -14,14 +14,16 @@ class Driver extends React.Component {
 				color: "#5eaec5",
 				text: "发推数",
 				lineType: "default",
-				disableLine: true,
-				disableScatter: false,
+				disableLine: false,
+				disableScatter: true,
 				style: { fontSize: "1em" },
 			}, // 曲线图
 			retweets: {
 				color: "#92c463",
 				text: "重发数",
 				lineType: "step",
+				disableLine: false,
+				disableScatter: true,
 				style: { fontSize: "100%" },
 			}, // 直方图
 			favourites: {
@@ -29,6 +31,8 @@ class Driver extends React.Component {
 				text: "喜欢数",
 				lineType: "curve",
 				style: { fontSize: "80%" },
+				disableLine: false,
+				disableScatter: true,
 				disableOnMount: false,
 			}, // 默认折线图
 			disableColor: "green",
@@ -192,7 +196,7 @@ class Driver extends React.Component {
 				}}
 				maxDatalength={5000}
 				processTimeRemaining={5}
-				debounceTime={4000}
+				// debounceTime={2000}
 			/>
 		);
 	}
